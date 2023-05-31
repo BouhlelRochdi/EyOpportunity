@@ -20,6 +20,7 @@ class Migration(migrations.Migration):
                 ('role', models.CharField(max_length=255)),
                 ('type', models.CharField(max_length=255)),
                 ('equipe', models.CharField(max_length=255)),
+                ('activated', models.BooleanField()),
             ],
         ),
     ]
