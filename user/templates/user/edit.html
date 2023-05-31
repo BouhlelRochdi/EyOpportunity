@@ -12,35 +12,29 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="title">Title</label>
-                <input type="text" name="title" class="form-control" value="{{ user.title }}" />
+                <label for="userName">userName</label>
+                <input type="text" name="userName" class="form-control" value="{{ user.userName }}" />
             </div>
             
             <div class="form-group">
-                <label for="synopsis">Synopsis</label>
-                <textarea name="synopsis" rows="5" class="form-control" >{{ user.synopsis }}</textarea>
+                <label for="email">email</label>
+                <textarea name="email" rows="5" class="form-control" >{{ user.email }}</textarea>
             </div>
 
             <div class="form-group">
-                <label for="actors">Actors</label>
-                <input type="text" name="actors" class="form-control" value="{{ user.actors }}" />    
+                <label for="role">role</label>
+                <input type="text" name="role" class="form-control" value="{{ user.role }}" />    
             </div>
 
             <div class="form-group">
-                <label for="genre">Genre</label>
-                <input type="text" name="genre" class="form-control" value="{{ user.genre }}" />    
+                <label for="type">type</label>
+                <input type="text" name="type" class="form-control" value="{{ user.type }}" />    
             </div>
 
             <div class="form-group">
-                <label for="duration">Duration</label>
-                <input type="text" name="duration" class="form-control" value="{{ user.duration }}" />
+                <label for="equipe">equipe</label>
+                <input type="text" name="equipe" class="form-control" value="{{ user.equipe }}" />
                 <small class="form-text text-muted">In minutes</small>
-            </div>
-
-            <div class="form-group">
-                <label for="rate">Rate</label>
-                <input type="text" name="rate" class="form-control" value="{{ user.rate }}" />
-                <small class="form-text text-muted">From 1 to 5 stars</small>
             </div>
 
             <div class="row">

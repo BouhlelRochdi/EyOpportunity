@@ -23,14 +23,7 @@ def index(request):
 def create_new(request):
 
     if request.method == 'POST':
-        user = User(
-            title=request.POST['title'],
-            synopsis=request.POST['synopsis'],
-            actors=request.POST['actors'],
-            genre=request.POST['genre'],
-            duration=request.POST['duration'],
-            rate=request.POST['rate'],
-            
+        user = User(            
             userName=request.POST['userName'],
             email=request.POST['email'],
             role=request.POST['role'],
@@ -56,13 +49,6 @@ def edit(request, user_id=None):
     user = User.objects.filter(id=user_id).first()
 
     if request.method == 'POST':
-        user.title=request.POST['title']
-        user.synopsis=request.POST['synopsis']
-        user.actors=request.POST['actors']
-        user.genre=request.POST['genre']
-        user.duration=request.POST['duration']
-        user.rate=request.POST['rate']
-        
         user.userName=request.POST['userName']
         user.email=request.POST['email']
         user.role=request.POST['role']
