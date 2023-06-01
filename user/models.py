@@ -3,12 +3,12 @@ from django.db import models
 # Create your models here.
 
 class EyUser(models.Model):
-    userName = models.CharField(max_length=255, null=True, default = None)
-    email = models.EmailField(null=False, default =None)
-    password = models.CharField(max_length=255, null=True, blank=False, default = None)
-    role = models.CharField(max_length=255, null=True, default = None)
-    type = models.CharField(max_length=255, null=True, default = None)
-    equipe = models.CharField(max_length=255, null=True, default = None)
+    userName = models.CharField(max_length=255, )
+    email = models.EmailField(null=False)
+    password = models.CharField(max_length=255, null=True)
+    role = models.CharField(max_length=255, null=True)
+    type = models.CharField(max_length=255)
+    equipe = models.CharField(max_length=255)
     activated = models.CharField(max_length=255, default='checked')
     #def save(self, *args, **kwargs):
         #super(User, self).save(*args, **kwargs)

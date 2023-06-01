@@ -31,11 +31,11 @@ def create_new(request):
     print('---------------- we are in --------------------')
     if request.method == 'POST':
         user = EyUser(
-            userName=request.POST.get('userName', False),
-            email=request.POST.get('email', False),
-            role=request.POST.get('role', False),
-            type=request.POST.get('type', False),
-            equipe=request.POST.get('equipe', False)
+            userName=request.POST.get('userName'),
+            email=request.POST.get('email'),
+            role=request.POST.get('role'),
+            type=request.POST.get('type'),
+            equipe=request.POST.get('equipe')
         )
         user.save()
         return HttpResponseRedirect(reverse('users_index') + '?edit_id=' + str(user.id))
@@ -85,9 +85,9 @@ def delete(request, user_id=None):
 @csrf_exempt
 def register(request):
     if request.method == 'POST':
-        userName = request.POST.get('userName', False),
-        email = request.POST.get('email', False),
-        password = request.POST.get('password', False)
+        userName = request.POST['userName'],
+        email = request.POST['email'],
+        password = request.POST['password']
 
         if EyUser.objects.filter(email=email).exists():
             # L'utilisateur existe déjà
@@ -95,7 +95,7 @@ def register(request):
         else:
             # Création d'un nouvel utilisateur
             user = EyUser.objects.create(
-                userName=userName, password=password, email=email)
+                userName=userName,password=password,email=email )
             # Vous pouvez également ajouter d'autres champs personnalisés à l'utilisateur ici
 
             # Envoi d'une réponse JSON
@@ -109,6 +109,8 @@ def register(request):
 
 def getAllUsers(request):
     users = EyUser.objects.all()
+    for ey_user in users:
+        print(ey_user.userName)
     if users is None:
         data = {'message': 'no users found', 'status': 'error'}
         return JsonResponse(data)
@@ -129,10 +131,20 @@ def activateUser(request, user_id=None):
     else:
         user.activateUser = 'allow'
 
-    t#emplate = loader.get_template('user/view.html')
+    #emplate = loader.get_template('user/view.html')
     return JsonResponse(user, safe=False)
 
-
+@csrf_exempt
+def login(request):
+    email = request.POST['email'],
+    password = request.POST['password']
+    
+    targetUser = EyUser.objects.filter(email=email).exists()
+    if targetUser:
+        if targetUser.password == password:
+            data = {'message': 'login success', 'status': 'success'}
+        else:
+            data = {'message': 'password incorrect', 'status': 'error'}
 
 
 
