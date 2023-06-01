@@ -11,16 +11,33 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        
         migrations.CreateModel(
-            name='User',
+            name='EyUser',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('userName', models.CharField(max_length=255)),
                 ('email', models.CharField(max_length=255)),
+                ('password', models.CharField(max_length=255)),
                 ('role', models.CharField(max_length=255)),
                 ('type', models.CharField(max_length=255)),
                 ('equipe', models.CharField(max_length=255)),
-                ('activated', models.BooleanField()),
+                ('activated', models.CharField(max_length=255)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Archive',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('archiveName', models.CharField(max_length=255)),
+                ('archiveData', models.CharField(max_length=255)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Equipe',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('equipeName', models.CharField(max_length=255)),
             ],
         ),
     ]
