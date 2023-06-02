@@ -179,7 +179,7 @@ def sign_in(request):
 #################################         Archive         ########################################
 
 @csrf_exempt
-def createArchive(request, user_id=None):
+def createArchive(request, user_id=None, equipe_id=None):
     if request.method == 'POST':
         archive = Archive(
             archiveName=request.POST.get('archiveName'),
@@ -187,24 +187,21 @@ def createArchive(request, user_id=None):
         )
         try:
             user = EyUser.objects.get(id=user_id)
+            equipe = Equipe.objects.get(id=equipe_id)
             archive.user = user
+            archive.equipe = equipe
             archive.save()
             data = {'message': 'Enregistrement réussi', 'status': 'success'}
             return JsonResponse(data, status=200)
         except EyUser.DoesNotExist:
-            return JsonResponse({'message': 'user not found', 'status': 401})
-    else:        
+            return JsonResponse({'message': 'user who want to add archive is not found', 'status': 401})
+    else:
         return JsonResponse({'message': 'something went wrong', 'status': 'error'})
 
 
 def getFullArchive(request):
     archives = Archive.objects.all()
-    for archive in archives:
-        print('user name => ', archive.archiveName)
-        # print('email => ', ey_user.email)
-        # print("role => ", ey_user.role)
-        # print('id => ', ey_user.id)
-    if archive is None:
+    if archives is None:
         data = {'message': 'no archive found', 'status': 'error'}
         return JsonResponse(data)
     else:
@@ -212,3 +209,51 @@ def getFullArchive(request):
         json_data = json.loads(fullList)
     # Utiliser JsonResponse pour renvoyer la réponse JSON
     return JsonResponse(json_data, safe=False)
+
+
+def getArchiveByUser(request, user_id=None):
+    print('user_id => ', user_id)
+    try:
+        user = EyUser.objects.get(id=user_id)
+        archives = Archive.objects.filter(user=user)
+        fullList = serializers.serialize('json', archives)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'message': 'user or archive does not exist', 'status': 401})
+
+
+def update_archive(request, archive_id=None):
+    archive = Archive(
+        archiveName=request.POST.get('archiveName'),
+        archiveData=request.FILES.get('file'),
+        status=request.POST.get('status'),
+        progression=request.POST.get('progression')
+    )
+    try:
+        archive = Archive.objects.get(id=archive_id)
+        archive.save()
+    except Archive.DoesNotExist:
+        return JsonResponse({'error': 'Archive not found.'}, status=404)
+
+
+##################################################################################################
+#################################         Equipe         ########################################
+
+@csrf_exempt
+def createEquipe(request):
+    if request.method == 'POST':
+        equipe = Equipe(
+            equipeName=request.POST.get('equipeName'),
+            equipeDesc=request.POST.get('equipeDesc')
+        )
+        try:
+            equipe.save()
+            return JsonResponse({'message': 'Enregistrement réussi', 'status': 'success'}, status=200)
+        except Archive.DoesNotExist:
+            return JsonResponse({'error': 'Model does not exist.'}, status=404)
+    else:
+        return JsonResponse({'message': 'Check method, it must be a POST'}, status= 403)
+
+
+
