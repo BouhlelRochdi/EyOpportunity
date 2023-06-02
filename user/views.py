@@ -12,29 +12,26 @@ import random
 import string
 from django.core.serializers import serialize
 from django.db.models.query import QuerySet
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken
 
 
 def index(request):
-    print('---------------- we are in index --------------------')
     users = EyUser.objects.all()
-
     context = {'users': users}
-
     if 'edit_id' in request.GET:
         context = {**context, 'message': 'edit',
                    'message_id': request.GET['edit_id']}
-
     if 'delete_id' in request.GET:
         context = {**context, 'message': 'delete',
                    'message_id': request.GET['delete_id']}
-
     template = loader.get_template('user/index.html')
     return HttpResponse(template.render(context, request))
 
 
 @csrf_exempt
 def create_new(request):
-    print('---------------- we are in create new --------------------')
     if request.method == 'POST':
         user = EyUser(
             userName=request.POST.get('userName'),
@@ -52,47 +49,83 @@ def create_new(request):
 
 
 def view(request, user_id=None):
-    print('---------------- we are in view --------------------')
     user = EyUser.objects.filter(id=user_id).first()
     context = {'user': user}
     template = loader.get_template('user/view.html')
     return HttpResponse(template.render(context, request))
 
 
+def decodeToken(access_token):
+    if access_token:
+        # Extract the access token
+        try:
+            token = access_token.split(' ')[1]
+            decoded_token = AccessToken(token)
+            payload = decoded_token.payload
+            return payload
+        except (IndexError, InvalidToken):
+            # Handle invalid token or missing token in header
+            return JsonResponse({'error': 'Invalid or missing access token', 'status': 401})
+    # If the authorization header is not found
+    return JsonResponse({'error': 'Authorization header not found', 'status': 401})
+
+
+def checkTokenPayload(payload):
+    if payload:
+        try:
+            user = EyUser.objects.get(id=payload['user_id'])
+            return user
+        except EyUser.DoesNotExist:
+            return JsonResponse({'error': 'User not found', 'status': 404})
+    else:
+        return JsonResponse({'error': 'no token exist', 'status': 401})
+
+
+@csrf_exempt
 def edit(request, user_id=None):
-    print('---------------- we are in edit --------------------')
-    user = EyUser.objects.filter(id=user_id).first()
-
-    if request.method == 'POST':
-        user.userName = request.POST['userName']
-        user.email = request.POST['email']
-        user.role = request.POST['role']
-        user.type = request.POST['type']
-        user.equipe = request.POST['equipe']
-        user.save()
-        return HttpResponseRedirect(reverse('users_index') + '?edit_id=' + str(user.id))
-
-    context = {'user': user}
-    template = loader.get_template('user/edit.html')
-    return HttpResponse(template.render(context, request))
+    authorization_header = request.headers.get('Authorization')
+    payload = decodeToken(authorization_header)
+    if payload:
+        try:
+            user = EyUser.objects.get(id=user_id)
+            if user.id == payload['user_id']:
+                data = request.POST  # Assumes form data is sent in the request body
+                model_fields = [
+                    field.name for field in EyUser._meta.get_fields()]
+                for field, value in data.items():
+                    if field in model_fields:
+                        setattr(user, field, value)
+                user.save()
+                fullList = serializers.serialize('json', user)
+                json_data = json.loads(fullList)
+                # Utiliser JsonResponse pour renvoyer la réponse JSON
+                return JsonResponse(json_data, safe=False)
+            else:
+                return JsonResponse({'error': 'you do not have the permission to edit this user'}, status=401)
+        except EyUser.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'no token exist', 'status': 401})
 
 
 def delete(request, user_id=None):
-    print('---------------- we are in delete --------------------')
-    user = EyUser.objects.filter(id=user_id).first()
-
-    if request.method == 'POST':
-        user = EyUser.objects.filter(id=user_id).delete()
-        return HttpResponseRedirect(reverse('users_index') + '?delete_id=' + str(user_id))
-
-    context = {'user': user}
-    template = loader.get_template('user/delete.html')
-    return HttpResponse(template.render(context, request))
+    authorization_header = request.headers.get('Authorization')
+    payload = decodeToken(authorization_header)
+    user = checkTokenPayload(payload)
+    try:
+        user = checkTokenPayload(payload)
+        if user.id == user_id:
+            if request.method == 'POST':
+                user = EyUser.objects.filter(id=user_id).delete()
+                return JsonResponse({'success': 'User has been deleted', 'status': 200})
+        else:
+            return JsonResponse({'error': 'you do not have the permission to edit this user', 'status': 401})
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'User not found', 'status': 404})
 
 
 @csrf_exempt
 def register(request):
-    print('---------------- we are in register --------------------')
     if request.method == 'POST':
         userName_arrived = request.POST['userName'],
         email_arrived = request.POST['email'],
@@ -119,34 +152,27 @@ def register(request):
 
 def getAllUsers(request):
     users = EyUser.objects.all()
-    for ey_user in users:
-        print('user name => ', ey_user.userName)
-        # print('email => ', ey_user.email)
-        # print("role => ", ey_user.role)
-        # print('id => ', ey_user.id)
     if users is None:
-        data = {'message': 'no users found', 'status': 'error'}
+        data = {'message': 'no users found', 'status': 404}
         return JsonResponse(data)
     else:
         fullList = serializers.serialize('json', users)
         json_data = json.loads(fullList)
-    # Utiliser JsonResponse pour renvoyer la réponse JSON
     return JsonResponse(json_data, safe=False)
 
 
 def activateUser(request, id=None):
-    user = EyUser.objects.filter(id=id).first()
-    if user is None:
-        data = {'message': 'no users found', 'status': 'error'}
+    authorization_header = request.headers.get('Authorization')
+    payload = decodeToken(authorization_header)
+    user = checkTokenPayload(payload)
+    if user is None | user.id != id:
+        return JsonResponse({'error': 'no users found', 'status': 401})
     elif user.activated == 'activated':
-        data = {'message': 'user already activated', 'status': 'error'}
+        return JsonResponse({'error': 'user already activated', 'status': 301})
     else:
         user.activated = 'activated'
         user.save()
-        return HttpResponseRedirect(reverse('users_index') + '?id=' + str(id))
-    # emplate = loader.get_template('user/view.html')
-    userToReturn = serializers.serialize('json', user)
-    return JsonResponse(userToReturn, safe=False)
+        return JsonResponse({'success': 'user has been activated successfully', 'status': 200})
 
 
 @csrf_exempt
@@ -154,14 +180,11 @@ def sign_in(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
-        print('email==== ', email)
-        print('password==== ', password)
         try:
             user = EyUser.objects.get(email=email)
             if user.pwd == password:
                 # Log in the user
-                token = ''.join(random.choices(
-                    string.ascii_letters + string.digits, k=16))
+                token = AccessToken.for_user(user)
                 user.access_token = token
                 user.save()
                 data = {'message': 'login success', 'status': 'success'}
@@ -180,29 +203,33 @@ def sign_in(request):
 
 @csrf_exempt
 def createArchive(request, user_id=None, equipe_id=None):
-    if request.method == 'POST':
-        archive = Archive(
-            archiveName=request.POST.get('archiveName'),
-            archiveData=request.FILES.get('file')
-        )
-        try:
-            user = EyUser.objects.get(id=user_id)
-            equipe = Equipe.objects.get(id=equipe_id)
-            archive.user = user
-            archive.equipe = equipe
-            archive.save()
-            data = {'message': 'Enregistrement réussi', 'status': 'success'}
-            return JsonResponse(data, status=200)
-        except EyUser.DoesNotExist:
-            return JsonResponse({'message': 'user who want to add archive is not found', 'status': 401})
-    else:
-        return JsonResponse({'message': 'something went wrong', 'status': 'error'})
+    authorization_header = request.headers.get('Authorization')
+    payload = decodeToken(authorization_header)
+    user = checkTokenPayload(payload)
+    if user.id == user_id:
+        if request.method == 'POST':
+            archive = Archive(
+                archiveName=request.POST.get('archiveName'),
+                archiveData=request.FILES.get('file')
+            )
+            try:
+                equipe = Equipe.objects.get(id=equipe_id)
+                archive.user = user
+                archive.equipe = equipe
+                archive.save()
+                data = {'message': 'Enregistrement réussi', 'status': 200}
+                return JsonResponse(data)
+            except EyUser.DoesNotExist:
+                return JsonResponse({'message': 'user who want to add archive is not found', 'status': 401})
+        else:
+            return JsonResponse({'message': 'something went wrong', 'status': 404})
+    return JsonResponse({'message': 'user invalid', 'status': 401})
 
 
 def getFullArchive(request):
     archives = Archive.objects.all()
     if archives is None:
-        data = {'message': 'no archive found', 'status': 'error'}
+        data = {'message': 'no archive found', 'status': 404}
         return JsonResponse(data)
     else:
         fullList = serializers.serialize('json', archives)
@@ -212,29 +239,39 @@ def getFullArchive(request):
 
 
 def getArchiveByUser(request, user_id=None):
-    print('user_id => ', user_id)
-    try:
-        user = EyUser.objects.get(id=user_id)
-        archives = Archive.objects.filter(user=user)
-        fullList = serializers.serialize('json', archives)
-        json_data = json.loads(fullList)
-        return JsonResponse(json_data, safe=False)
-    except EyUser.DoesNotExist:
-        return JsonResponse({'message': 'user or archive does not exist', 'status': 401})
+    authorization_header = request.headers.get('Authorization')
+    payload = decodeToken(authorization_header)
+    user = checkTokenPayload(payload)
+    if user.id != user_id:
+        return JsonResponse({'message': 'user invalid', 'status': 401})
+    else:
+        try:
+            archives = Archive.objects.filter(user=user)
+            fullList = serializers.serialize('json', archives)
+            json_data = json.loads(fullList)
+            return JsonResponse(json_data, safe=False)
+        except Archive.DoesNotExist:
+            return JsonResponse({'message': 'Archive does not exist', 'status': 401})
 
-
+@csrf_exempt
 def update_archive(request, archive_id=None):
-    archive = Archive(
-        archiveName=request.POST.get('archiveName'),
-        archiveData=request.FILES.get('file'),
-        status=request.POST.get('status'),
-        progression=request.POST.get('progression')
-    )
-    try:
-        archive = Archive.objects.get(id=archive_id)
-        archive.save()
-    except Archive.DoesNotExist:
-        return JsonResponse({'error': 'Archive not found.'}, status=404)
+    authorization_header = request.headers.get('Authorization')
+    payload = decodeToken(authorization_header)
+    user = checkTokenPayload(payload)
+    if user is None:
+        return JsonResponse({'error': 'you are not Authenticated.', 'status': 401})
+    else:
+        archive = Archive(
+            archiveName=request.POST.get('archiveName'),
+            archiveData=request.FILES.get('file'),
+            status=request.POST.get('status'),
+            progression=request.POST.get('progression')
+        )
+        try:
+            archive = Archive.objects.get(id=archive_id)
+            archive.save()
+        except Archive.DoesNotExist:
+            return JsonResponse({'error': 'Archive not found.', 'status': 404})
 
 
 ##################################################################################################
@@ -242,6 +279,7 @@ def update_archive(request, archive_id=None):
 
 @csrf_exempt
 def createEquipe(request):
+
     if request.method == 'POST':
         equipe = Equipe(
             equipeName=request.POST.get('equipeName'),
@@ -249,11 +287,20 @@ def createEquipe(request):
         )
         try:
             equipe.save()
-            return JsonResponse({'message': 'Enregistrement réussi', 'status': 'success'}, status=200)
+            return JsonResponse({'message': 'Enregistrement réussi', 'status': 'success', 'status': 200})
         except Archive.DoesNotExist:
-            return JsonResponse({'error': 'Model does not exist.'}, status=404)
+            return JsonResponse({'error': 'Model does not exist.', 'status': 404})
     else:
-        return JsonResponse({'message': 'Check method, it must be a POST'}, status= 403)
+        return JsonResponse({'message': 'Check method, it must be a POST', 'status': 403})
 
 
-
+def getAllEquipes(request):
+    equipes = Equipe.objects.all()
+    if equipes is None:
+        data = {'message': 'no equipe found', 'status': 'error'}
+        return JsonResponse(data)
+    else:
+        fullList = serializers.serialize('json', equipes)
+        json_data = json.loads(fullList)
+    # Utiliser JsonResponse pour renvoyer la réponse JSON
+    return JsonResponse(json_data, safe=False)

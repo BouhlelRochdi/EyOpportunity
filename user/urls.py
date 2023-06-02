@@ -25,7 +25,7 @@ urlpatterns = [
     #############################
     # equipe part
     path('create-equipe/', views.createEquipe, name='create_equipe'),
-    
+    path('get-all-equipes/', views.getAllEquipes, name='get_all_equipes'),
     
     
     
