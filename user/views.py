@@ -1,15 +1,21 @@
 import json
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.template import loader
-from .models import EyUser
+from .models import EyUser, Archive, Equipe
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
+from django.contrib import messages
+import random
+import string
+from django.core.serializers import serialize
+from django.db.models.query import QuerySet
 
 
 def index(request):
+    print('---------------- we are in index --------------------')
     users = EyUser.objects.all()
 
     context = {'users': users}
@@ -28,7 +34,7 @@ def index(request):
 
 @csrf_exempt
 def create_new(request):
-    print('---------------- we are in --------------------')
+    print('---------------- we are in create new --------------------')
     if request.method == 'POST':
         user = EyUser(
             userName=request.POST.get('userName'),
@@ -46,6 +52,7 @@ def create_new(request):
 
 
 def view(request, user_id=None):
+    print('---------------- we are in view --------------------')
     user = EyUser.objects.filter(id=user_id).first()
     context = {'user': user}
     template = loader.get_template('user/view.html')
@@ -53,6 +60,7 @@ def view(request, user_id=None):
 
 
 def edit(request, user_id=None):
+    print('---------------- we are in edit --------------------')
     user = EyUser.objects.filter(id=user_id).first()
 
     if request.method == 'POST':
@@ -61,7 +69,6 @@ def edit(request, user_id=None):
         user.role = request.POST['role']
         user.type = request.POST['type']
         user.equipe = request.POST['equipe']
-
         user.save()
         return HttpResponseRedirect(reverse('users_index') + '?edit_id=' + str(user.id))
 
@@ -71,6 +78,7 @@ def edit(request, user_id=None):
 
 
 def delete(request, user_id=None):
+    print('---------------- we are in delete --------------------')
     user = EyUser.objects.filter(id=user_id).first()
 
     if request.method == 'POST':
@@ -84,18 +92,20 @@ def delete(request, user_id=None):
 
 @csrf_exempt
 def register(request):
+    print('---------------- we are in register --------------------')
     if request.method == 'POST':
-        userName = request.POST['userName'],
-        email = request.POST['email'],
+        userName_arrived = request.POST['userName'],
+        email_arrived = request.POST['email'],
         password = request.POST['password']
+        email = str(email_arrived[0]).strip("(),'")
+        userName = str(userName_arrived[0]).strip("(),'")
 
         if EyUser.objects.filter(email=email).exists():
             # L'utilisateur existe déjà
             data = {'message': 'L\'utilisateur existe déjà', 'status': 'error'}
         else:
             # Création d'un nouvel utilisateur
-            user = EyUser.objects.create(
-                userName=userName,password=password,email=email )
+            EyUser.objects.create(userName=userName, pwd=password, email=email)
             # Vous pouvez également ajouter d'autres champs personnalisés à l'utilisateur ici
 
             # Envoi d'une réponse JSON
@@ -110,7 +120,10 @@ def register(request):
 def getAllUsers(request):
     users = EyUser.objects.all()
     for ey_user in users:
-        print(ey_user.userName)
+        print('user name => ', ey_user.userName)
+        # print('email => ', ey_user.email)
+        # print("role => ", ey_user.role)
+        # print('id => ', ey_user.id)
     if users is None:
         data = {'message': 'no users found', 'status': 'error'}
         return JsonResponse(data)
@@ -121,32 +134,81 @@ def getAllUsers(request):
     return JsonResponse(json_data, safe=False)
 
 
-def activateUser(request, user_id=None):
-    user = EyUser.objects.filter(id=user_id).first()
-    # context = {'user': user}
+def activateUser(request, id=None):
+    user = EyUser.objects.filter(id=id).first()
     if user is None:
         data = {'message': 'no users found', 'status': 'error'}
-    elif user.activated == 'allow':
+    elif user.activated == 'activated':
         data = {'message': 'user already activated', 'status': 'error'}
     else:
-        user.activateUser = 'allow'
+        user.activated = 'activated'
+        user.save()
+        return HttpResponseRedirect(reverse('users_index') + '?id=' + str(id))
+    # emplate = loader.get_template('user/view.html')
+    userToReturn = serializers.serialize('json', user)
+    return JsonResponse(userToReturn, safe=False)
 
-    #emplate = loader.get_template('user/view.html')
-    return JsonResponse(user, safe=False)
 
 @csrf_exempt
-def login(request):
-    email = request.POST['email'],
-    password = request.POST['password']
-    
-    targetUser = EyUser.objects.filter(email=email).exists()
-    if targetUser:
-        if targetUser.password == password:
-            data = {'message': 'login success', 'status': 'success'}
-        else:
-            data = {'message': 'password incorrect', 'status': 'error'}
+def sign_in(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        print('email==== ', email)
+        print('password==== ', password)
+        try:
+            user = EyUser.objects.get(email=email)
+            if user.pwd == password:
+                # Log in the user
+                token = ''.join(random.choices(
+                    string.ascii_letters + string.digits, k=16))
+                user.access_token = token
+                user.save()
+                data = {'message': 'login success', 'status': 'success'}
+                print('user success login')
+                return JsonResponse(user, data, safe=False)
+            else:
+                return JsonResponse({'message': 'Invalid password', 'status': 'error'})
+        except EyUser.DoesNotExist:
+            return JsonResponse({'message': 'Invalid email', 'status': 'error'})
+    else:
+        return JsonResponse({'message': 'request must be a POST', 'status': 'error'})
 
 
+##################################################################################################
+#################################         Archive         ########################################
+
+@csrf_exempt
+def createArchive(request, user_id=None):
+    if request.method == 'POST':
+        archive = Archive(
+            archiveName=request.POST.get('archiveName'),
+            archiveData=request.FILES.get('file')
+        )
+        try:
+            user = EyUser.objects.get(id=user_id)
+            archive.user = user
+            archive.save()
+            data = {'message': 'Enregistrement réussi', 'status': 'success'}
+            return JsonResponse(data, status=200)
+        except EyUser.DoesNotExist:
+            return JsonResponse({'message': 'user not found', 'status': 401})
+    else:        
+        return JsonResponse({'message': 'something went wrong', 'status': 'error'})
 
 
-
+def getFullArchive(request):
+    archives = Archive.objects.all()
+    for archive in archives:
+        print('user name => ', archive.archiveName)
+        # print('email => ', ey_user.email)
+        # print("role => ", ey_user.role)
+        # print('id => ', ey_user.id)
+    if archive is None:
+        data = {'message': 'no archive found', 'status': 'error'}
+        return JsonResponse(data)
+    else:
+        fullList = serializers.serialize('json', archives)
+        json_data = json.loads(fullList)
+    # Utiliser JsonResponse pour renvoyer la réponse JSON
+    return JsonResponse(json_data, safe=False)
