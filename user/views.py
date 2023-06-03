@@ -441,3 +441,11 @@ def getAllEquipesAndUsers(request):
                 return JsonResponse({'error': 'user not found.', 'status': 404})
     # Utiliser JsonResponse pour renvoyer la réponse JSON
     return JsonResponse(json_data, safe=False)
+
+def getEquipeWithUsers(request):
+    equipes = Equipe.objects.prefetch_related('user')
+    for equipe in equipes:
+        print("Equipe Name:", equipe.equipeName)
+        users = equipe.eyusers.all()
+    for user in users:
+        print("User Name:", user.userName)
