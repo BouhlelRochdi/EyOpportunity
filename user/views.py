@@ -380,7 +380,6 @@ def getArchiveByProgression(request, progression=None):
 
 @csrf_exempt
 def createEquipe(request):
-
     if request.method == 'POST':
         equipe = Equipe(
             equipeName=request.POST.get('equipeName'),
@@ -422,6 +421,7 @@ def getEquipeById(request, equipe_id=None):
     
 # get all equipe and for each equipe five me the users belonging to it
 def getAllEquipesAndUsers(request):
+    fullObject = {}
     equipes = Equipe.objects.all()
     if equipes is None:
         data = {'message': 'no equipe found', 'status': 'error'}
@@ -432,7 +432,9 @@ def getAllEquipesAndUsers(request):
         for equipe in equipes:
             try:
                 users = EyUser.objects.filter(equipe=equipe)
-                fullList = serializers.serialize('json', users)
+                fullObject['members'] = users
+                fullObject['equipe'] = equipe
+                fullList = serializers.serialize('json', fullObject)
                 json_data = json.loads(fullList)
                 return JsonResponse(json_data, safe=False)
             except EyUser.DoesNotExist:
