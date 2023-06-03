@@ -35,7 +35,7 @@ urlpatterns = [
     path('create-equipe/', views.createEquipe, name='create_equipe'),
     #path('get-all-equipes/', views.getAllEquipes, name='get_all_equipes'),
     path('get-equipe-by-id/<int:equipe_id>', views.getEquipeById, name='get_equipe_by_id'),
-    path('get-all-equipes/', views.getAllEquipesAndUsers, name='get_all_equipes'),
+    path('get-all-equipes/', views.getEquipeWithUsers, name='get_all_equipes'),
     
     
     
