@@ -54,6 +54,7 @@ def view(request, user_id=None):
     template = loader.get_template('user/view.html')
     return HttpResponse(template.render(context, request))
 
+
 def decodeToken(access_token):
     if access_token:
         # Extract the access token
@@ -67,6 +68,7 @@ def decodeToken(access_token):
             return JsonResponse({'error': 'Invalid or missing access token', 'status': 401})
     # If the authorization header is not found
     return JsonResponse({'error': 'Authorization header not found', 'status': 401})
+
 
 def checkTokenPayload(payload):
     if payload:
@@ -136,12 +138,13 @@ def register(request):
             return JsonResponse(data)
         else:
             try:
-                EyUser.objects.create(userName=userName, pwd=password, email=email)
+                EyUser.objects.create(
+                    userName=userName, pwd=password, email=email)
                 return JsonResponse({'message': 'L\'utilisateur a ete creer avec success', 'status': 200})
             except EyUser.DoesNotExist:
                 return JsonResponse({'error': 'Something went wrong', 'status': 403})
     return JsonResponse({'message': 'Méthode non autorisée', 'status': 'error'})
-    
+
 
 def getAllUsers(request):
     try:
@@ -151,6 +154,7 @@ def getAllUsers(request):
         return JsonResponse(json_data, safe=False)
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'no users found', 'status': 404})
+
 
 @csrf_exempt
 def activateUser(request, id=None):
@@ -164,27 +168,25 @@ def activateUser(request, id=None):
         return HttpResponse({'success': 'user has been activated successfully', 'status': 200})
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'user not found', 'status': 404})
-    
+
+
 def createAdmin(request):
     user = EyUser(
-        userName= 'admin',
-        pwd= 'admin',
-        email= 'admin@admin',
-        activated= 'activated',
-        role= 'manager',
+        userName='admin',
+        pwd='admin',
+        email='admin@admin',
+        activated='activated',
+        role='manager',
     )
     user.save()
     return JsonResponse({'message': 'admin created successfully', 'status': 200})
-        
-    
-    
-    
+
     # if user_connected is None:
     #     return JsonResponse({'error': 'you need to connect before', 'status': 401})
     # else:
     #     try:
     #         userToActivate = EyUser.objects.get(id=id)
-            
+
     # elif user.activated == 'activated':
     #     return JsonResponse({'error': 'user already activated', 'status': 301})
     # else:
@@ -219,6 +221,7 @@ def sign_in(request):
     else:
         return JsonResponse({'message': 'request must be a POST', 'status': 402})
 
+
 def sign_out(request):
     authorization_header = request.headers.get('Authorization')
     payload = decodeToken(authorization_header)
@@ -230,6 +233,7 @@ def sign_out(request):
         user.save()
         return JsonResponse({'success': 'user has been logged out successfully', 'status': 200})
 
+
 def getConnectedUser(request):
     authorization_header = request.headers.get('Authorization')
     payload = decodeToken(authorization_header)
@@ -240,7 +244,8 @@ def getConnectedUser(request):
         fullList = serializers.serialize('json', user)
         json_data = json.loads(fullList)
         return JsonResponse(json_data, safe=False)
-    
+
+
 def getDeactivatedUsers(request):
     try:
         users = EyUser.objects.filter(activated='deactivated')
@@ -249,7 +254,8 @@ def getDeactivatedUsers(request):
         return JsonResponse(json_data, safe=False)
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'no users found', 'status': 404})
-    
+
+
 def getActivatedUsers(request):
     try:
         users = EyUser.objects.filter(activated='activated')
@@ -261,6 +267,7 @@ def getActivatedUsers(request):
 
 ##################################################################################################
 #################################         Archive         ########################################
+
 
 @csrf_exempt
 def createArchive(request, user_id=None, equipe_id=None):
@@ -322,6 +329,7 @@ def getArchiveByUser(request, user_id=None):
         except Archive.DoesNotExist:
             return JsonResponse({'message': 'Archive does not exist', 'status': 401})
 
+
 @csrf_exempt
 def update_archive(request, archive_id=None):
     authorization_header = request.headers.get('Authorization')
@@ -341,7 +349,8 @@ def update_archive(request, archive_id=None):
             archive.save()
         except Archive.DoesNotExist:
             return JsonResponse({'error': 'Archive not found.', 'status': 404})
-        
+
+
 def getArchiveByEquipe(request, equipe_id=None):
     try:
         equipe = Equipe.objects.get(id=equipe_id)
@@ -353,8 +362,9 @@ def getArchiveByEquipe(request, equipe_id=None):
         except Equipe.DoesNotExist:
             return JsonResponse({'error': 'Archive not found.', 'status': 404})
     except Equipe.DoesNotExist:
-            return JsonResponse({'error': 'Equipe not found.', 'status': 404})
-        
+        return JsonResponse({'error': 'Equipe not found.', 'status': 404})
+
+
 def getArchiveByStatus(request, status=None):
     try:
         archives = Archive.objects.filter(status=status)
@@ -364,6 +374,7 @@ def getArchiveByStatus(request, status=None):
     except Archive.DoesNotExist:
         return JsonResponse({'error': 'Archive not found.', 'status': 404})
 
+
 def getArchiveByProgression(request, progression=None):
     try:
         archives = Archive.objects.filter(progression=progression)
@@ -372,7 +383,6 @@ def getArchiveByProgression(request, progression=None):
         return JsonResponse(json_data, safe=False)
     except Archive.DoesNotExist:
         return JsonResponse({'error': 'Archive not found.', 'status': 404})
-    
 
 
 ##################################################################################################
@@ -406,6 +416,8 @@ def getAllEquipes(request):
     return JsonResponse(json_data, safe=False)
 
 # get equipe and users belonging to it
+
+
 def getEquipeById(request, equipe_id=None):
     try:
         equipe = Equipe.objects.get(id=equipe_id)
@@ -418,8 +430,10 @@ def getEquipeById(request, equipe_id=None):
             return JsonResponse({'error': 'user not found.', 'status': 404})
     except Equipe.DoesNotExist:
         return JsonResponse({'error': 'Equipe not found.', 'status': 404})
-    
+
 # get all equipe and for each equipe five me the users belonging to it
+
+
 def getAllEquipesAndUsers(request):
     fullResults = []
     try:
@@ -433,9 +447,12 @@ def getAllEquipesAndUsers(request):
                 fullResults.append(fullObject)
             except EyUser.DoesNotExist:
                 return JsonResponse({'error': 'user not found.', 'status': 404})
-        return JsonResponse({'data': fullResults})
+        fullList = serializers.serialize('json', {'data': fullResults})
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
     except Equipe.DoesNotExist:
         return JsonResponse({'error': 'Equipe not found.', 'status': 404})
+
 
 def getEquipeWithUsers(request):
     equipes = Equipe.objects.prefetch_related('user')
