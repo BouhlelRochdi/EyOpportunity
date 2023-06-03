@@ -19,7 +19,7 @@ urlpatterns = [
     path('login/', views.sign_in, name='login'),
     path('getAllUsers/', views.getAllUsers, name='getAllUsers'),
     path('activate-user/<int:id>', views.activateUser, name='activate_user'),
-    path('deactivate-user/', views.getDeactivatedUsers, name='deactivate_user'),
+    path('get-deactivate-user/', views.getDeactivatedUsers, name='deactivate_user'),
     
     #############################
     # archive part
