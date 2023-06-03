@@ -264,10 +264,11 @@ def getActivatedUsers(request):
 
 @csrf_exempt
 def createArchive(request, user_id=None, equipe_id=None):
-    authorization_header = request.headers.get('Authorization')
-    payload = decodeToken(authorization_header)
-    user = checkTokenPayload(payload)
-    if user.id == user_id:
+    # authorization_header = request.headers.get('Authorization')
+    # payload = decodeToken(authorization_header)
+    # user = checkTokenPayload(payload)
+    try:
+        user = EyUser.objects.get(id=user_id)
         if request.method == 'POST':
             archive = Archive(
                 archiveName=request.POST.get('archiveName'),
@@ -284,7 +285,8 @@ def createArchive(request, user_id=None, equipe_id=None):
                 return JsonResponse({'message': 'user who want to add archive is not found', 'status': 401})
         else:
             return JsonResponse({'message': 'something went wrong', 'status': 404})
-    return JsonResponse({'message': 'user invalid', 'status': 401})
+    except EyUser.DoesNotExist:
+        return JsonResponse({'message': 'user not found', 'status': 404})
 
 
 def getFullArchive(request):
