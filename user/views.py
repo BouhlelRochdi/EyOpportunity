@@ -384,7 +384,7 @@ def createEquipe(request):
     if request.method == 'POST':
         equipe = Equipe(
             equipeName=request.POST.get('equipeName'),
-            equipeDesc=request.POST.get('equipeDesc')
+            project=request.POST.get('project')
         )
         try:
             equipe.save()
