@@ -447,9 +447,7 @@ def getAllEquipesAndUsers(request):
                 fullResults.append(fullObject)
             except EyUser.DoesNotExist:
                 return JsonResponse({'error': 'user not found.', 'status': 404})
-        fullList = serializers.serialize('json', {'data': fullResults})
-        json_data = json.loads(fullList)
-        return JsonResponse(json_data, safe=False)
+        return JsonResponse({'data': fullResults}, safe=False)
     except Equipe.DoesNotExist:
         return JsonResponse({'error': 'Equipe not found.', 'status': 404})
 
