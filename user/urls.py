@@ -5,6 +5,11 @@ from . import views
 urlpatterns = [
     
     path('', views.index, name='users_index'),
+    
+    # admin
+    path('create-admin/', views.createAdmin, name='create_admin'),
+    
+    # User part
     path('create', views.create_new, name='users_create'),
     path('view/<int:user_id>', views.view, name='users_view'),
     path('edit/<int:user_id>', views.edit, name='users_edit'),
@@ -14,6 +19,7 @@ urlpatterns = [
     path('login/', views.sign_in, name='login'),
     path('getAllUsers/', views.getAllUsers, name='getAllUsers'),
     path('activate-user/<int:id>', views.activateUser, name='activate_user'),
+    path('deactivate-user/', views.getDeactivatedUsers, name='deactivate_user'),
     
     #############################
     # archive part

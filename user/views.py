@@ -125,52 +125,72 @@ def delete(request, user_id=None):
 @csrf_exempt
 def register(request):
     if request.method == 'POST':
-        userName_arrived = request.POST['userName'],
-        email_arrived = request.POST['email'],
-        password = request.POST['password']
+        userName_arrived = request.POST.get('userName'),
+        email_arrived = request.POST.get('email'),
+        password = request.POST.get('password')
         email = str(email_arrived[0]).strip("(),'")
         userName = str(userName_arrived[0]).strip("(),'")
-
-        if EyUser.objects.filter(email=email).exists():
-            # L'utilisateur existe déjà
-            data = {'message': 'L\'utilisateur existe déjà', 'status': 'error'}
+        userFounded = EyUser.objects.filter(email=email).exists()
+        if userFounded:
+            data = {'message': 'L\'utilisateur existe deja', 'status': 403}
+            return JsonResponse(data)
         else:
-            # Création d'un nouvel utilisateur
-            EyUser.objects.create(userName=userName, pwd=password, email=email)
-            # Vous pouvez également ajouter d'autres champs personnalisés à l'utilisateur ici
-
-            # Envoi d'une réponse JSON
-            data = {'message': 'Enregistrement réussi', 'status': 'success'}
-
-        return JsonResponse(data, status=200)
-
-    # Si la méthode de requête n'est pas POST, renvoyer une réponse d'erreur
+            try:
+                EyUser.objects.create(userName=userName, pwd=password, email=email)
+                return JsonResponse({'message': 'L\'utilisateur a ete creer avec success', 'status': 200})
+            except EyUser.DoesNotExist:
+                return JsonResponse({'error': 'Something went wrong', 'status': 403})
     return JsonResponse({'message': 'Méthode non autorisée', 'status': 'error'})
-
+    
 
 def getAllUsers(request):
-    users = EyUser.objects.all()
-    if users is None:
-        data = {'message': 'no users found', 'status': 404}
-        return JsonResponse(data)
-    else:
+    try:
+        users = EyUser.objects.all()
         fullList = serializers.serialize('json', users)
         json_data = json.loads(fullList)
-    return JsonResponse(json_data, safe=False)
+        return JsonResponse(json_data, safe=False)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'no users found', 'status': 404})
 
-
+@csrf_exempt
 def activateUser(request, id=None):
-    authorization_header = request.headers.get('Authorization')
-    payload = decodeToken(authorization_header)
-    user = checkTokenPayload(payload)
-    if user is None | user.id != id:
-        return JsonResponse({'error': 'no users found', 'status': 401})
-    elif user.activated == 'activated':
-        return JsonResponse({'error': 'user already activated', 'status': 301})
-    else:
-        user.activated = 'activated'
-        user.save()
-        return JsonResponse({'success': 'user has been activated successfully', 'status': 200})
+    role_arrived = request.POST.get('role')
+    role = str(role_arrived).strip("(),'")
+    try:
+        userToActivate = EyUser.objects.get(id=id)
+        userToActivate.activated = 'activated'
+        userToActivate.role = role
+        userToActivate.save()
+        return HttpResponse({'success': 'user has been activated successfully', 'status': 200})
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'user not found', 'status': 404})
+    
+def createAdmin(request):
+    user = EyUser(
+        userName= 'admin',
+        pwd= 'admin',
+        email= 'admin@admin',
+        activated= 'activated',
+        role= 'manager',
+    )
+    user.save()
+    return JsonResponse({'message': 'admin created successfully', 'status': 200})
+        
+    
+    
+    
+    # if user_connected is None:
+    #     return JsonResponse({'error': 'you need to connect before', 'status': 401})
+    # else:
+    #     try:
+    #         userToActivate = EyUser.objects.get(id=id)
+            
+    # elif user.activated == 'activated':
+    #     return JsonResponse({'error': 'user already activated', 'status': 301})
+    # else:
+    #     user.activated = 'activated'
+    #     user.save()
+    #     return JsonResponse({'success': 'user has been activated successfully', 'status': 200})
 
 
 @csrf_exempt
@@ -178,22 +198,26 @@ def sign_in(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
+        print('email', email)
+        print('password', password)
         try:
             user = EyUser.objects.get(email=email)
+            print('user', user)
+            print('user.pwd', user.pwd)
             if user.pwd == password:
-                # Log in the user
                 token = AccessToken.for_user(user)
                 user.access_token = token
                 user.save()
-                data = {'message': 'login success', 'status': 'success'}
-                print('user success login')
-                return JsonResponse(user, data, safe=False)
+                userFounded = EyUser.objects.filter(email=email)
+                fullList = serializers.serialize('json', userFounded)
+                json_data = json.loads(fullList)
+                return JsonResponse(json_data, safe=False)
             else:
-                return JsonResponse({'message': 'Invalid password', 'status': 'error'})
+                return JsonResponse({'message': 'Invalid password', 'status': 301})
         except EyUser.DoesNotExist:
-            return JsonResponse({'message': 'Invalid email', 'status': 'error'})
+            return JsonResponse({'message': 'Invalid email', 'status': 301})
     else:
-        return JsonResponse({'message': 'request must be a POST', 'status': 'error'})
+        return JsonResponse({'message': 'request must be a POST', 'status': 402})
 
 def sign_out(request):
     authorization_header = request.headers.get('Authorization')
@@ -216,6 +240,16 @@ def getConnectedUser(request):
         fullList = serializers.serialize('json', user)
         json_data = json.loads(fullList)
         return JsonResponse(json_data, safe=False)
+    
+# get users with status deactivated
+def getDeactivatedUsers(request):
+    try:
+        users = EyUser.objects.filter(activated='deactivated')
+        fullList = serializers.serialize('json', users)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'no users found', 'status': 404})
 
 ##################################################################################################
 #################################         Archive         ########################################
