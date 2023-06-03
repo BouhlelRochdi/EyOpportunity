@@ -267,13 +267,19 @@ def createArchive(request, user_id=None, equipe_id=None):
     # authorization_header = request.headers.get('Authorization')
     # payload = decodeToken(authorization_header)
     # user = checkTokenPayload(payload)
+    print('user_id', user_id)
+    print('equipe_id', equipe_id)
     try:
         user = EyUser.objects.get(id=user_id)
+        print('user', user.userName)
         if request.method == 'POST':
             archive = Archive(
                 archiveName=request.POST.get('archiveName'),
-                archiveData=request.FILES.get('file')
+                dueDate=request.POST.get('dueDate'),
+                file=request.FILES.get('file'),
+                status=request.POST.get('status'),
             )
+            print('archiveName', archive.archiveName)
             try:
                 equipe = Equipe.objects.get(id=equipe_id)
                 archive.user = user

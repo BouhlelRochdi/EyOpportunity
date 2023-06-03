@@ -55,7 +55,8 @@ class EyUser(models.Model):
 class Archive(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     archiveName = models.CharField(max_length=255)
-    archiveData = models.FileField(upload_to='uploads/')
+    dueDate= models.CharField(max_length=255, default='')
+    file = models.FileField(upload_to='uploads/')
     status = models.CharField(max_length=255, default='pending')
     progression = models.CharField(max_length=255, default='0%')
     user = models.OneToOneField(EyUser, on_delete=models.PROTECT, default='')  # oneToOne
