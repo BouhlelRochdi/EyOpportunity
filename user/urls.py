@@ -21,6 +21,7 @@ urlpatterns = [
     path('get-archives/', views.getFullArchive, name='get_full_archives'),
     path('get-user-archive/<int:user_id>', views.getArchiveByUser, name='get_user_archives'),
     path('update-archive/<int:user_id>', views.getArchiveByUser, name='update_archives'),
+    path('archive-by-equipe/<int:equipe_id>', views.getArchiveByEquipe, name='archives_by_equipe'),
     
     #############################
     # equipe part

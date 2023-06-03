@@ -41,11 +41,11 @@ def create_new(request):
             equipe=request.POST.get('equipe')
         )
         user.save()
-        return HttpResponseRedirect(reverse('users_index') + '?edit_id=' + str(user.id))
-
-    context = {}
-    template = loader.get_template('user/create.html')
-    return HttpResponse(template.render(context, request))
+        fullList = serializers.serialize('json', user)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    else:
+        return JsonResponse({'error': 'Invalid request method', 'status': 405})
 
 
 def view(request, user_id=None):
@@ -53,7 +53,6 @@ def view(request, user_id=None):
     context = {'user': user}
     template = loader.get_template('user/view.html')
     return HttpResponse(template.render(context, request))
-
 
 def decodeToken(access_token):
     if access_token:
@@ -68,7 +67,6 @@ def decodeToken(access_token):
             return JsonResponse({'error': 'Invalid or missing access token', 'status': 401})
     # If the authorization header is not found
     return JsonResponse({'error': 'Authorization header not found', 'status': 401})
-
 
 def checkTokenPayload(payload):
     if payload:
@@ -197,6 +195,27 @@ def sign_in(request):
     else:
         return JsonResponse({'message': 'request must be a POST', 'status': 'error'})
 
+def sign_out(request):
+    authorization_header = request.headers.get('Authorization')
+    payload = decodeToken(authorization_header)
+    user = checkTokenPayload(payload)
+    if user is None:
+        return JsonResponse({'error': 'user not found', 'status': 404})
+    else:
+        user.access_token = None
+        user.save()
+        return JsonResponse({'success': 'user has been logged out successfully', 'status': 200})
+
+def getConnectedUser(request):
+    authorization_header = request.headers.get('Authorization')
+    payload = decodeToken(authorization_header)
+    user = checkTokenPayload(payload)
+    if user is None:
+        return JsonResponse({'error': 'user not found', 'status': 404})
+    else:
+        fullList = serializers.serialize('json', user)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
 
 ##################################################################################################
 #################################         Archive         ########################################
@@ -272,6 +291,38 @@ def update_archive(request, archive_id=None):
             archive.save()
         except Archive.DoesNotExist:
             return JsonResponse({'error': 'Archive not found.', 'status': 404})
+        
+def getArchiveByEquipe(request, equipe_id=None):
+    try:
+        equipe = Equipe.objects.get(id=equipe_id)
+        try:
+            archives = Archive.objects.filter(equipe_id=equipe_id)
+            fullList = serializers.serialize('json', archives)
+            json_data = json.loads(fullList)
+            return JsonResponse(json_data, safe=False)
+        except Equipe.DoesNotExist:
+            return JsonResponse({'error': 'Archive not found.', 'status': 404})
+    except Equipe.DoesNotExist:
+            return JsonResponse({'error': 'Equipe not found.', 'status': 404})
+        
+def getArchiveByStatus(request, status=None):
+    try:
+        archives = Archive.objects.filter(status=status)
+        fullList = serializers.serialize('json', archives)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except Archive.DoesNotExist:
+        return JsonResponse({'error': 'Archive not found.', 'status': 404})
+
+def getArchiveByProgression(request, progression=None):
+    try:
+        archives = Archive.objects.filter(progression=progression)
+        fullList = serializers.serialize('json', archives)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except Archive.DoesNotExist:
+        return JsonResponse({'error': 'Archive not found.', 'status': 404})
+    
 
 
 ##################################################################################################
