@@ -241,10 +241,18 @@ def getConnectedUser(request):
         json_data = json.loads(fullList)
         return JsonResponse(json_data, safe=False)
     
-# get users with status deactivated
 def getDeactivatedUsers(request):
     try:
         users = EyUser.objects.filter(activated='deactivated')
+        fullList = serializers.serialize('json', users)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'no users found', 'status': 404})
+    
+def getActivatedUsers(request):
+    try:
+        users = EyUser.objects.filter(activated='activated')
         fullList = serializers.serialize('json', users)
         json_data = json.loads(fullList)
         return JsonResponse(json_data, safe=False)
@@ -387,5 +395,39 @@ def getAllEquipes(request):
     else:
         fullList = serializers.serialize('json', equipes)
         json_data = json.loads(fullList)
+    # Utiliser JsonResponse pour renvoyer la réponse JSON
+    return JsonResponse(json_data, safe=False)
+
+# get equipe and users belonging to it
+def getEquipeById(request, equipe_id=None):
+    try:
+        equipe = Equipe.objects.get(id=equipe_id)
+        try:
+            users = EyUser.objects.filter(equipe=equipe)
+            fullList = serializers.serialize('json', users)
+            json_data = json.loads(fullList)
+            return JsonResponse(json_data, safe=False)
+        except EyUser.DoesNotExist:
+            return JsonResponse({'error': 'user not found.', 'status': 404})
+    except Equipe.DoesNotExist:
+        return JsonResponse({'error': 'Equipe not found.', 'status': 404})
+    
+# get all equipe and for each equipe five me the users belonging to it
+def getAllEquipesAndUsers(request):
+    equipes = Equipe.objects.all()
+    if equipes is None:
+        data = {'message': 'no equipe found', 'status': 'error'}
+        return JsonResponse(data)
+    else:
+        fullList = serializers.serialize('json', equipes)
+        json_data = json.loads(fullList)
+        for equipe in equipes:
+            try:
+                users = EyUser.objects.filter(equipe=equipe)
+                fullList = serializers.serialize('json', users)
+                json_data = json.loads(fullList)
+                return JsonResponse(json_data, safe=False)
+            except EyUser.DoesNotExist:
+                return JsonResponse({'error': 'user not found.', 'status': 404})
     # Utiliser JsonResponse pour renvoyer la réponse JSON
     return JsonResponse(json_data, safe=False)

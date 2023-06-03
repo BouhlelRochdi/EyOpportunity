@@ -20,6 +20,7 @@ urlpatterns = [
     path('getAllUsers/', views.getAllUsers, name='getAllUsers'),
     path('activate-user/<int:id>', views.activateUser, name='activate_user'),
     path('get-deactivate-user/', views.getDeactivatedUsers, name='deactivate_user'),
+    path('get-activate-user/', views.getActivatedUsers, name='activate_user'),
     
     #############################
     # archive part
@@ -33,7 +34,8 @@ urlpatterns = [
     # equipe part
     path('create-equipe/', views.createEquipe, name='create_equipe'),
     path('get-all-equipes/', views.getAllEquipes, name='get_all_equipes'),
-    
+    path('get-equipe-by-id/<int:equipe_id>', views.getEquipeById, name='get_equipe_by_id'),
+    path('get-all-equipes/<int:user_id>', views.getAllEquipesAndUsers, name='get_all_equipes'),
     
     
     

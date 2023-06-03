@@ -5,7 +5,8 @@ from django.db import models
 class Equipe(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     equipeName = models.CharField(max_length=255)
-    equipeDesc = models.CharField(max_length=255, default='')
+    project= models.CharField(max_length=255, default='')
+    
     # def __init__(self, equipeName, equipeDesc, id):
     #     self.equipeName = equipeName
     #     self.equipeDesc = equipeDesc
