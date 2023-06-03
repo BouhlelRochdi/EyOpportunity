@@ -21,6 +21,7 @@ urlpatterns = [
     path('activate-user/<int:id>', views.activateUser, name='activate_user'),
     path('get-deactivate-user/', views.getDeactivatedUsers, name='deactivate_user'),
     path('get-activate-user/', views.getActivatedUsers, name='activate_user'),
+    path('delete-user/<int:id>', views.deleteUser, name='delete_user'),
     
     #############################
     # archive part

@@ -108,18 +108,15 @@ def edit(request, user_id=None):
         return JsonResponse({'error': 'no token exist', 'status': 401})
 
 
-def delete(request, user_id=None):
-    authorization_header = request.headers.get('Authorization')
-    payload = decodeToken(authorization_header)
-    user = checkTokenPayload(payload)
+def deleteUser(request, user_id=None):
+    # authorization_header = request.headers.get('Authorization')
+    # payload = decodeToken(authorization_header)
+    # user = checkTokenPayload(payload)
     try:
-        user = checkTokenPayload(payload)
-        if user.id == user_id:
-            if request.method == 'POST':
-                user = EyUser.objects.filter(id=user_id).delete()
-                return JsonResponse({'success': 'User has been deleted', 'status': 200})
-        else:
-            return JsonResponse({'error': 'you do not have the permission to edit this user', 'status': 401})
+        # user = checkTokenPayload(payload)
+        user = EyUser.objects.get(id=user_id)
+        deletedUser = EyUser.objects.filter(id=user_id).delete()
+        return JsonResponse({'success': 'User has been deleted', 'status': 200})
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'User not found', 'status': 404})
 
@@ -445,6 +442,7 @@ def getAllEquipesAndUsers(request):
                 fullObject['members'] = users
                 fullObject['equipe'] = equipe
                 fullResults.append(fullObject)
+                print('fullResults', fullResults)
             except EyUser.DoesNotExist:
                 return JsonResponse({'error': 'user not found.', 'status': 404})
         return JsonResponse({'data': fullResults}, safe=False)
