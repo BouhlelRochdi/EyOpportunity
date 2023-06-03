@@ -421,26 +421,21 @@ def getEquipeById(request, equipe_id=None):
     
 # get all equipe and for each equipe five me the users belonging to it
 def getAllEquipesAndUsers(request):
-    fullObject = {}
-    equipes = Equipe.objects.all()
-    if equipes is None:
-        data = {'message': 'no equipe found', 'status': 'error'}
-        return JsonResponse(data)
-    else:
-        fullList = serializers.serialize('json', equipes)
-        json_data = json.loads(fullList)
+    fullResults = []
+    try:
+        equipes = Equipe.objects.all()
         for equipe in equipes:
+            fullObject = {}
             try:
                 users = EyUser.objects.filter(equipe=equipe)
                 fullObject['members'] = users
                 fullObject['equipe'] = equipe
-                fullList = serializers.serialize('json', fullObject)
-                json_data = json.loads(fullList)
-                return JsonResponse(json_data, safe=False)
+                fullResults.append(fullObject)
             except EyUser.DoesNotExist:
                 return JsonResponse({'error': 'user not found.', 'status': 404})
-    # Utiliser JsonResponse pour renvoyer la réponse JSON
-    return JsonResponse(json_data, safe=False)
+        return JsonResponse({'data': fullResults})
+    except Equipe.DoesNotExist:
+        return JsonResponse({'error': 'Equipe not found.', 'status': 404})
 
 def getEquipeWithUsers(request):
     equipes = Equipe.objects.prefetch_related('user')
