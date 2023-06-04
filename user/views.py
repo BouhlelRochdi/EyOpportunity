@@ -107,7 +107,7 @@ def edit(request, user_id=None):
     else:
         return JsonResponse({'error': 'no token exist', 'status': 401})
 
-
+@csrf_exempt
 def deleteUser(request, user_id=None):
     # authorization_header = request.headers.get('Authorization')
     # payload = decodeToken(authorization_header)
