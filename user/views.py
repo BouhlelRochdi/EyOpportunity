@@ -210,7 +210,7 @@ def sign_in(request):
             user = EyUser.objects.get(email=email)
             print('user', user)
             print('user.pwd', user.pwd)
-            if user.pwd == password & user.activated == 'activated':
+            if user.pwd == password:
                 token = AccessToken.for_user(user)
                 user.access_token = token
                 user.save()
