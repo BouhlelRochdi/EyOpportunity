@@ -6,18 +6,7 @@ class Equipe(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     equipeName = models.CharField(max_length=255)
     project= models.CharField(max_length=255, default='')
-    
-    # def __init__(self, equipeName, equipeDesc, id):
-    #     self.equipeName = equipeName
-    #     self.equipeDesc = equipeDesc
-    #     self.id = id
 
-    # def to_json(self):
-    #     return {
-    #         'equipeName': self.equipeName,
-    #         'equipeDesc': self.equipeDesc,
-    #         'id': self.id,
-    #     }
 
 class EyUser(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -29,27 +18,7 @@ class EyUser(models.Model):
     equipe = models.CharField(max_length=255, default='')
     activated = models.CharField(max_length=255, default='deactivated')
     access_token = models.CharField(max_length=255, default='')
-    # def __init__(self, userName, email, pwd, role, type, activated, access_token, id):
-    #     self.userName = userName
-    #     self.email = email
-    #     self.pwd = pwd
-    #     self.role = role
-    #     self.type = type
-    #     self.activated = activated
-    #     self.access_token = access_token
-    #     self.id = id
 
-    # def to_json(self):
-    #     return {
-    #         'userName': self.userName,
-    #         'email': self.email,
-    #         'pwd': self.pwd,
-    #         'role': self.role,
-    #         'type': self.type,
-    #         'activated': self.activated,
-    #         'access_token': self.access_token,
-    #         'id': self.id,
-    #     }
 
 
 class Archive(models.Model):
@@ -59,8 +28,7 @@ class Archive(models.Model):
     file = models.FileField(upload_to='uploads/', default='')
     status = models.CharField(max_length=255, default='pending')
     progression = models.CharField(max_length=255, default='0%')
-    user = models.ManyToManyField(EyUser, on_delete=models.CASCADE, default='')  # oneToOne
-    equipe= models.ManyToManyField(Equipe, on_delete=models.CASCADE, default='')  # oneToOne
+    equipe = models.ForeignKey(Equipe, on_delete=models.CASCADE, null=True)
     # def __init__(self, archiveName, archiveData, status, progression, id):
     #     self.archiveName = archiveName
     #     self.archiveData = archiveData

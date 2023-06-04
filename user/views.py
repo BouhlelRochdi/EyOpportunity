@@ -239,7 +239,7 @@ def getActivatedUsers(request):
 #################################         Archive         ########################################
 
 @csrf_exempt
-def createArchive(request, user_id=None, equipe_id=None):
+def old_createArchive(request, user_id=None, equipe_id=None):
     # authorization_header = request.headers.get('Authorization')
     # payload = decodeToken(authorization_header)
     # user = checkTokenPayload(payload)
@@ -267,6 +267,25 @@ def createArchive(request, user_id=None, equipe_id=None):
             return JsonResponse({'message': 'something went wrong', 'status': 404})
     except EyUser.DoesNotExist:
         return JsonResponse({'message': 'user not found', 'status': 404})
+
+
+@csrf_exempt
+def createArchive(request):
+    if request.method == 'POST':
+        archive = Archive(
+            dueDate=request.POST.get('dueDate'),
+            file=request.FILES.get('file'),
+            status=request.POST.get('status'),
+            progression=request.POST.get('progression')
+        )
+        try:
+            archive.save()
+            data = {'message': 'Enregistrement réussi', 'status': 200}
+            return JsonResponse(data)
+        except Archive.DoesNotExist:
+            return JsonResponse({'message': 'Error while creating archive', 'status': 404})
+    else:
+        return JsonResponse({'message': 'something went wrong', 'status': 404})
 
 
 def getFullArchive(request):
@@ -307,13 +326,23 @@ def update_archive(request, archive_id=None):
     # else:
     try:
         archive = Archive.objects.get(id=archive_id)
-        archive = Archive(
-            archiveName=request.POST.get('archiveName'),
-            file=request.FILES.get('file'),
-            status=request.POST.get('status'),
-            progression=request.POST.get('progression')
-        )
-        archive.equipe = archive.equipe
+        
+        archive.dueDate = request.POST.get('dueDate')
+        archive.file = request.FILES.get('file')
+        archive.status = request.POST.get('status')
+        archive.progression = request.POST.get('progression')
+        archive.equipe = request.POST.get('equipe')
+        archive.save()
+        return JsonResponse({'message': 'Archive updated successfully', 'status': 200})
+    except Archive.DoesNotExist:
+        return JsonResponse({'error': 'Archive not found.', 'status': 404})
+    
+@csrf_exempt
+def affectArchiveToEquipe(request, archive_id=None, equipe_id=None):
+    try:
+        archive = Archive.objects.get(id=archive_id)
+        equipe = Equipe.objects.get(id=equipe_id)
+        archive.equipe = equipe
         archive.save()
         return JsonResponse({'message': 'Archive updated successfully', 'status': 200})
     except Archive.DoesNotExist:
@@ -322,14 +351,27 @@ def update_archive(request, archive_id=None):
 
 def getArchiveByEquipe(request, equipe_id=None):
     try:
-        equipe = Equipe.objects.get(id=equipe_id)
-        try:
-            archives = Archive.objects.filter(equipe_id=equipe_id)
-            fullList = serializers.serialize('json', archives)
-            json_data = json.loads(fullList)
-            return JsonResponse(json_data, safe=False)
-        except Equipe.DoesNotExist:
-            return JsonResponse({'error': 'Archive not found.', 'status': 404})
+        archives = Archive.objects.filter(equipe=equipe_id)
+        # equipe = Equipe.objects.select_related('archive_set').get(id=equipe_id)
+        # archives = equipe.archive_set.all()
+        for archive in archives:
+            print('archive.status', archive.status)
+            print('archive.progression', archive.progression)
+        fullList = serializers.serialize('json', archives)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    
+        
+        
+        
+        # equipe = Equipe.objects.get(id=equipe_id)
+        # try:
+        #     archives = Archive.objects.filter(equipe_id=equipe_id)
+        #     fullList = serializers.serialize('json', archives)
+        #     json_data = json.loads(fullList)
+        #     return JsonResponse(json_data, safe=False)
+        # except Equipe.DoesNotExist:
+        #     return JsonResponse({'error': 'Archive not found.', 'status': 404})
     except Equipe.DoesNotExist:
         return JsonResponse({'error': 'Equipe not found.', 'status': 404})
 

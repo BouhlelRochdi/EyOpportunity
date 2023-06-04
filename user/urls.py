@@ -24,7 +24,8 @@ urlpatterns = [
     
     #############################
     # archive part
-    path('create-archive/<int:user_id>/<int:equipe_id>', views.createArchive, name='archive_create'),
+    path('create-archive/', views.createArchive, name='archive_create'),
+    path('affect-archive-to-equipe/<int:archive_id>/<int:equipe_id>', views.affectArchiveToEquipe, name='affect_archive_to_equipe'),
     path('get-archives/', views.getFullArchive, name='get_full_archives'),
     path('get-user-archive/<int:user_id>', views.getArchiveByUser, name='get_user_archives'),
     path('update-archive/<int:archive_id>', views.update_archive, name='update_archives'),
