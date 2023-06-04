@@ -25,7 +25,7 @@ SECRET_KEY = 'p8yfpha2g#@^t7b+q6!rb0v5i)$fjd^4%=_c45v_mhwj@%c(7i'
 
 CSRF_COOKIE_SECURE = False
 CORS_ORIGIN_ALLOW_ALL = True
-APPEND_SLASH=False
+APPEND_SLASH = False
 CSRF_TRUSTED_ORIGINS = ['http://localhost:4200']
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -57,7 +57,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=100), 
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=100),
 }
 
 MIDDLEWARE = [
@@ -140,14 +140,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# MEDIA_URL = '/media/'
+MEDIA_URL = '/media/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/media/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '/uploads/'),
-    os.path.join(BASE_DIR, '/static/'),
-    # ('uploads', os.path.join(BASE_DIR, 'uploads'))
+    os.path.join(BASE_DIR, '')
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
