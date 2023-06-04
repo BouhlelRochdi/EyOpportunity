@@ -84,27 +84,22 @@ def checkTokenPayload(payload):
 @csrf_exempt
 def edit(request, user_id=None):
     try:
-        user = EyUser.objects.get(id=user_id)
-        userName_arrived = request.POST.get('userName'),
-        role_arrived = request.POST.get('role'),
-        type_arrived = request.POST.get('type'),
-        equipe_arrived = request.POST.get('equipe')
-        userName = str(userName_arrived[0]).strip("(),'")
-        role = str(role_arrived[0]).strip("(),'")
-        type = str(type_arrived[0]).strip("(),'")
-        equipe = str(equipe_arrived[0]).strip("(),'")
-        user.userName = userName
-        user.role = role
-        user.type = type
-        user.equipe = equipe
-        
-        user.save()
-        fullList = serializers.serialize('json', user)
+        EyUser.objects.get(id=user_id)
+        updateUser = EyUser(
+            userName=request.POST.get('userName'),
+            email=request.POST.get('email'),
+            role=request.POST.get('role'),
+            type=request.POST.get('type'),
+            equipe=request.POST.get('equipe')
+        )
+        updateUser.save()
+        fullList = serializers.serialize('json', updateUser)
         json_data = json.loads(fullList)
         # Utiliser JsonResponse pour renvoyer la réponse JSON
         return JsonResponse(json_data, safe=False)
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
+
 
 @csrf_exempt
 def deleteUser(request, user_id=None):
@@ -113,6 +108,7 @@ def deleteUser(request, user_id=None):
         return JsonResponse({'success': 'User has been deleted', 'status': 200})
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'User not found', 'status': 404})
+
 
 @csrf_exempt
 def register(request):
@@ -170,19 +166,6 @@ def createAdmin(request):
     )
     user.save()
     return JsonResponse({'message': 'admin created successfully', 'status': 200})
-
-    # if user_connected is None:
-    #     return JsonResponse({'error': 'you need to connect before', 'status': 401})
-    # else:
-    #     try:
-    #         userToActivate = EyUser.objects.get(id=id)
-
-    # elif user.activated == 'activated':
-    #     return JsonResponse({'error': 'user already activated', 'status': 301})
-    # else:
-    #     user.activated = 'activated'
-    #     user.save()
-    #     return JsonResponse({'success': 'user has been activated successfully', 'status': 200})
 
 
 @csrf_exempt
@@ -258,7 +241,6 @@ def getActivatedUsers(request):
 ##################################################################################################
 #################################         Archive         ########################################
 
-
 @csrf_exempt
 def createArchive(request, user_id=None, equipe_id=None):
     # authorization_header = request.headers.get('Authorization')
@@ -328,18 +310,19 @@ def update_archive(request, archive_id=None):
     # if user is None:
     #     return JsonResponse({'error': 'you are not Authenticated.', 'status': 401})
     # else:
+    try:
+        archive = Archive.objects.get(id=archive_id)
         archive = Archive(
             archiveName=request.POST.get('archiveName'),
             file=request.FILES.get('file'),
             status=request.POST.get('status'),
             progression=request.POST.get('progression')
         )
-        try:
-            archive = Archive.objects.get(id=archive_id)
-            archive.save()
-            return JsonResponse({'message': 'Archive updated successfully', 'status': 200})
-        except Archive.DoesNotExist:
-            return JsonResponse({'error': 'Archive not found.', 'status': 404})
+        archive.equipe = archive.equipe
+        archive.save()
+        return JsonResponse({'message': 'Archive updated successfully', 'status': 200})
+    except Archive.DoesNotExist:
+        return JsonResponse({'error': 'Archive not found.', 'status': 404})
 
 
 def getArchiveByEquipe(request, equipe_id=None):
@@ -372,6 +355,13 @@ def getArchiveByProgression(request, progression=None):
         fullList = serializers.serialize('json', archives)
         json_data = json.loads(fullList)
         return JsonResponse(json_data, safe=False)
+    except Archive.DoesNotExist:
+        return JsonResponse({'error': 'Archive not found.', 'status': 404})
+    
+def deleteArchive(request, archive_id=None):
+    try:
+        Archive.objects.filter(id=archive_id).delete()
+        return JsonResponse({'message': 'Archive deleted successfully', 'status': 200})
     except Archive.DoesNotExist:
         return JsonResponse({'error': 'Archive not found.', 'status': 404})
 
@@ -421,15 +411,16 @@ def getEquipeById(request, equipe_id=None):
             return JsonResponse({'error': 'user not found.', 'status': 404})
     except Equipe.DoesNotExist:
         return JsonResponse({'error': 'Equipe not found.', 'status': 404})
-    
+
+
 def getMembersByEquipe(request, equipe_id=None):
-        try:
-            users = EyUser.objects.filter(equipe=equipe_id)
-            fullList = serializers.serialize('json', users)
-            json_data = json.loads(fullList)
-            return JsonResponse(json_data, safe=False)
-        except EyUser.DoesNotExist:
-            return JsonResponse({'error': 'user not found.', 'status': 404})
+    try:
+        users = EyUser.objects.filter(equipe=equipe_id)
+        fullList = serializers.serialize('json', users)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'user not found.', 'status': 404})
 
 # get all equipe and for each equipe five me the users belonging to it
 
@@ -457,37 +448,32 @@ def getAllEquipesAndUsers(request):
     # Set any additional headers if needed
         response['Custom-Header'] = 'Value'
         return response
-            # fullList = [FullObject]  # Convert FullObject dictionary to a list of dictionaries
-            # serialized_data = serializers.serialize('json', fullList)
-            # json_data = json.loads(serialized_data)
-            # fullResults.append(json_data)
-            # return JsonResponse(fullResults, safe=False)
-            # return fullList
+        # fullList = [FullObject]  # Convert FullObject dictionary to a list of dictionaries
+        # serialized_data = serializers.serialize('json', fullList)
+        # json_data = json.loads(serialized_data)
+        # fullResults.append(json_data)
+        # return JsonResponse(fullResults, safe=False)
+        # return fullList
     except Equipe.DoesNotExist:
         return JsonResponse({'error': 'Equipe not found.', 'status': 404})
-            
-            
-            
+
         # return JsonResponse({'data': equipes}, safe=False)
-            
-            # try:
-            #     user = EyUser.objects.get(equipe=equipe.id)
-            #     print('user=========>', user.userName)
-            # except EyUser.DoesNotExist:
-            #     return JsonResponse({'error': 'user not found.', 'status': 404})
-        
-                
-                
-                
-            # fullObject = {}
-            # try:
-            #     users = EyUser.objects.filter(equipe=equipe)
-            #     fullObject['members'] = users
-            #     fullObject['equipe'] = equipe
-            #     fullResults.append(fullObject)
-            #     print('fullResults', fullResults)
-            # except EyUser.DoesNotExist:
-            #     return JsonResponse({'error': 'user not found.', 'status': 404})
+
+        # try:
+        #     user = EyUser.objects.get(equipe=equipe.id)
+        #     print('user=========>', user.userName)
+        # except EyUser.DoesNotExist:
+        #     return JsonResponse({'error': 'user not found.', 'status': 404})
+
+        # fullObject = {}
+        # try:
+        #     users = EyUser.objects.filter(equipe=equipe)
+        #     fullObject['members'] = users
+        #     fullObject['equipe'] = equipe
+        #     fullResults.append(fullObject)
+        #     print('fullResults', fullResults)
+        # except EyUser.DoesNotExist:
+        #     return JsonResponse({'error': 'user not found.', 'status': 404})
         # return JsonResponse({'data': equipes}, safe=False)
 
 
@@ -498,3 +484,11 @@ def getEquipeWithUsers(request):
         users = equipe.eyusers.all()
     for user in users:
         print("User Name:", user.userName)
+        
+        
+def deleteEquipe(request, equipe_id=None):
+    try:
+        Equipe.objects.filter(id=equipe_id).delete()
+        return JsonResponse({'message': 'Equipe deleted successfully', 'status': 200})
+    except Equipe.DoesNotExist:
+        return JsonResponse({'error': 'Equipe not found.', 'status': 404})

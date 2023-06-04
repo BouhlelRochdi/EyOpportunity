@@ -29,6 +29,7 @@ urlpatterns = [
     path('get-user-archive/<int:user_id>', views.getArchiveByUser, name='get_user_archives'),
     path('update-archive/<int:archive_id>', views.update_archive, name='update_archives'),
     path('archive-by-equipe/<int:equipe_id>', views.getArchiveByEquipe, name='archives_by_equipe'),
+    path('delete-archive/<int:archive_id>', views.deleteArchive, name='delete_archive'),
     
     #############################
     # equipe part
@@ -37,7 +38,7 @@ urlpatterns = [
     path('get-equipe-by-id/<int:equipe_id>', views.getEquipeById, name='get_equipe_by_id'),
     path('get-all-equipes-Users/', views.getAllEquipesAndUsers, name='get_all_equipes'),
     path('get-members-by-equipe/<int:equipe_id>', views.getMembersByEquipe, name='get_members_by_equipe'),
-    
+    path('delete-equipe/<int:equipe_id>', views.deleteEquipe, name='delete_equipe'),
     
     
 ]

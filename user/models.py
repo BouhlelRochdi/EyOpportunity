@@ -22,7 +22,7 @@ class Equipe(models.Model):
 class EyUser(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     userName = models.CharField(max_length=255, )
-    email = models.EmailField(null=False)
+    email = models.EmailField(max_length=255, unique=True, null=True)
     pwd = models.CharField(max_length=255, null=True)
     role = models.CharField(max_length=255, default='')
     type = models.CharField(max_length=255, null=True, blank=True)
