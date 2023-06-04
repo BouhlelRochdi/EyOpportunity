@@ -24,9 +24,9 @@ class EyUser(models.Model):
     userName = models.CharField(max_length=255, )
     email = models.EmailField(null=False)
     pwd = models.CharField(max_length=255, null=True)
-    role = models.CharField(max_length=255, null=True)
-    type = models.CharField(max_length=255)
-    equipe = models.CharField(max_length=255)
+    role = models.CharField(max_length=255, default='')
+    type = models.CharField(max_length=255, null=True, blank=True)
+    equipe = models.CharField(max_length=255, default='')
     activated = models.CharField(max_length=255, default='deactivated')
     access_token = models.CharField(max_length=255, default='')
     # def __init__(self, userName, email, pwd, role, type, activated, access_token, id):
@@ -54,9 +54,9 @@ class EyUser(models.Model):
 
 class Archive(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    archiveName = models.CharField(max_length=255)
+    archiveName = models.CharField(max_length=255, null=True)
     dueDate= models.CharField(max_length=255, default='')
-    file = models.FileField(upload_to='uploads/')
+    file = models.FileField(upload_to='uploads/', default='')
     status = models.CharField(max_length=255, default='pending')
     progression = models.CharField(max_length=255, default='0%')
     user = models.OneToOneField(EyUser, on_delete=models.PROTECT, default='')  # oneToOne

@@ -20,23 +20,23 @@ urlpatterns = [
     path('activate-user/<int:id>', views.activateUser, name='activate_user'),
     path('get-deactivate-user/', views.getDeactivatedUsers, name='deactivate_user'),
     path('get-activate-user/', views.getActivatedUsers, name='activate_user'),
-    path('delete-user/<int:id>', views.deleteUser, name='delete_user'),
+    path('delete-user/<int:user_id>', views.deleteUser, name='delete_user'),
     
     #############################
     # archive part
     path('create-archive/<int:user_id>/<int:equipe_id>', views.createArchive, name='archive_create'),
     path('get-archives/', views.getFullArchive, name='get_full_archives'),
     path('get-user-archive/<int:user_id>', views.getArchiveByUser, name='get_user_archives'),
-    path('update-archive/<int:user_id>', views.getArchiveByUser, name='update_archives'),
+    path('update-archive/<int:archive_id>', views.update_archive, name='update_archives'),
     path('archive-by-equipe/<int:equipe_id>', views.getArchiveByEquipe, name='archives_by_equipe'),
     
     #############################
     # equipe part
     path('create-equipe/', views.createEquipe, name='create_equipe'),
-    #path('get-all-equipes/', views.getAllEquipes, name='get_all_equipes'),
+    path('get-all-equipes/', views.getAllEquipes, name='get_all_equipes'),
     path('get-equipe-by-id/<int:equipe_id>', views.getEquipeById, name='get_equipe_by_id'),
-    path('get-all-equipes/', views.getAllEquipesAndUsers, name='get_all_equipes'),
-    
+    path('get-all-equipes-Users/', views.getAllEquipesAndUsers, name='get_all_equipes'),
+    path('get-members-by-equipe/<int:equipe_id>', views.getMembersByEquipe, name='get_members_by_equipe'),
     
     
     
