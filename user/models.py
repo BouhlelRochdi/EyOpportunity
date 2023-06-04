@@ -59,8 +59,8 @@ class Archive(models.Model):
     file = models.FileField(upload_to='uploads/', default='')
     status = models.CharField(max_length=255, default='pending')
     progression = models.CharField(max_length=255, default='0%')
-    user = models.OneToOneField(EyUser, on_delete=models.CASCADE, default='')  # oneToOne
-    equipe= models.OneToOneField(Equipe, on_delete=models.CASCADE, default='')  # oneToOne
+    user = models.ManyToManyField(EyUser, on_delete=models.CASCADE, default='')  # oneToOne
+    equipe= models.ManyToManyField(Equipe, on_delete=models.CASCADE, default='')  # oneToOne
     # def __init__(self, archiveName, archiveData, status, progression, id):
     #     self.archiveName = archiveName
     #     self.archiveData = archiveData
