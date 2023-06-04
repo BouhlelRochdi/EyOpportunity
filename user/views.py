@@ -85,27 +85,27 @@ def checkTokenPayload(payload):
 def edit(request, user_id=None):
     authorization_header = request.headers.get('Authorization')
     payload = decodeToken(authorization_header)
-    if payload:
-        try:
-            user = EyUser.objects.get(id=user_id)
-            if user.id == payload['user_id']:
-                data = request.POST  # Assumes form data is sent in the request body
-                model_fields = [
-                    field.name for field in EyUser._meta.get_fields()]
-                for field, value in data.items():
-                    if field in model_fields:
-                        setattr(user, field, value)
-                user.save()
-                fullList = serializers.serialize('json', user)
-                json_data = json.loads(fullList)
-                # Utiliser JsonResponse pour renvoyer la réponse JSON
-                return JsonResponse(json_data, safe=False)
-            else:
-                return JsonResponse({'error': 'you do not have the permission to edit this user'}, status=401)
-        except EyUser.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
-    else:
-        return JsonResponse({'error': 'no token exist', 'status': 401})
+    # if payload:
+    try:
+        user = EyUser.objects.get(id=user_id)
+        if user.id == payload['user_id']:
+            data = request.POST  # Assumes form data is sent in the request body
+            model_fields = [
+                field.name for field in EyUser._meta.get_fields()]
+            for field, value in data.items():
+                if field in model_fields:
+                    setattr(user, field, value)
+            user.save()
+            fullList = serializers.serialize('json', user)
+            json_data = json.loads(fullList)
+            # Utiliser JsonResponse pour renvoyer la réponse JSON
+            return JsonResponse(json_data, safe=False)
+        else:
+            return JsonResponse({'error': 'you do not have the permission to edit this user'}, status=401)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    # else:
+    #     return JsonResponse({'error': 'no token exist', 'status': 401})
 
 @csrf_exempt
 def deleteUser(request, user_id=None):
