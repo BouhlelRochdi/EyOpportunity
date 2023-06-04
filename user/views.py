@@ -122,6 +122,12 @@ def edit(request, user_id=None):
         equipe_recieved = request.POST.get('equipe')
         if equipe_recieved is not None:
             user.equipe = equipe_recieved
+        cv_recieved = request.FILES.get('cv')
+        if cv_recieved is not None:
+            user.cv = cv_recieved
+        photo_recieved = request.FILES.get('photo')
+        if photo_recieved is not None:
+            user.photo = photo_recieved
         try:
             user.save()
             return JsonResponse({'message': 'User updated successfully', 'status': 200})
@@ -307,10 +313,11 @@ def getActivatedUsers(request):
 def createArchive(request):
     if request.method == 'POST':
         archive = Archive(
+            archiveName= request.POST.get('archiveName'),
             dueDate=request.POST.get('dueDate'),
             file=request.FILES.get('file'),
             status=request.POST.get('status'),
-            progression=request.POST.get('progression')
+            progression=request.POST.get('progression'),
         )
         try:
             archive.save()
@@ -354,6 +361,9 @@ def getArchiveByUser(request, user_id=None):
 def update_archive(request, archive_id=None):
     try:
         archive = Archive.objects.get(id=archive_id)
+        archiveName_recieved = request.POST.get('archiveName')
+        if archiveName_recieved is not None:
+            archive.archiveName = archiveName_recieved
         dueDate_recieved = request.POST.get('dueDate')
         if dueDate_recieved is not None:
             archive.dueDate = dueDate_recieved
@@ -463,6 +473,19 @@ def getUsersBelongingToEquipe(request, equipe_id=None):
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'User not found.', 'status': 404})
 
+
+def downloadArchiveFile(request, archive_id=None):
+    uploaded_file = Archive.objects.get(id=archive_id)
+    print('<<<<<<<<<<< uploaded_file.file.path > ', uploaded_file.file.path)
+    file_path = uploaded_file.file.path
+    print('<<<<<<<<<<<<<<<<< file_path > ', file_path)
+    with open(file_path, 'rb') as file:
+        response = HttpResponse(file.read())
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = 'attachment; filename=' + uploaded_file.file.name
+        print('<<<<<<<<<<<<<<<<< response > ', response)
+        return (response, file_path)
+        return response
 
 ##################################################################################################
 #################################         Equipe         ########################################

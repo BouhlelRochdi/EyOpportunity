@@ -43,6 +43,8 @@ urlpatterns = [
     path('getArchiveByEquipe/<int:archive_id>', views.getEquipeByArchive_old, name='get_archive_by_equipe'),
     
     
+    path('download-archive/<int:archive_id>', views.downloadArchiveFile, name='download_archive'),
+    
     #############################
     # equipe part
     path('create-equipe/', views.createEquipe, name='create_equipe'),
