@@ -66,7 +66,35 @@ def decodeToken(access_token):
     # If the authorization header is not found
     return JsonResponse({'error': 'Authorization header not found', 'status': 401})
 
+# update user by email
+@csrf_exempt
+def update(request, user_id=None):
+    if request.method == 'POST':
+        user = EyUser.objects.get(id=user_id)
+        user.userName = request.POST.get('userName')
+        user.email = request.POST.get('email')
+        user.role = request.POST.get('role')
+        user.type = request.POST.get('type')
+        user.save()
+        return JsonResponse({'message': 'User updated successfully', 'status': 200})
+    else:
+        return JsonResponse({'error': 'Invalid request method', 'status': 405})
 
+
+# affect user to an equipe
+@csrf_exempt
+def affectUserToEquipe(request, user_id=None):
+    if request.method == 'POST':
+        user = EyUser.objects.get(id=user_id)
+        equipe = Equipe.objects.get(id=request.POST.get('equipe'))
+        user.equipe = equipe
+        user.save()
+        return JsonResponse({'message': 'User updated successfully', 'status': 200})
+    else:
+        return JsonResponse({'error': 'Invalid request method', 'status': 405})
+    
+
+# check Token
 def checkTokenPayload(payload):
     if payload:
         try:
@@ -81,18 +109,23 @@ def checkTokenPayload(payload):
 @csrf_exempt
 def edit(request, user_id=None):
     try:
-        EyUser.objects.get(id=user_id)
-        updateUser = EyUser(
-            userName=request.POST.get('userName'),
-            email=request.POST.get('email'),
-            role=request.POST.get('role'),
-            type=request.POST.get('type'),
-            equipe=request.POST.get('equipe')
-        )
-        updateUser.save()
-        fullList = serializers.serialize('json', updateUser)
-        json_data = json.loads(fullList)
-        # Utiliser JsonResponse pour renvoyer la réponse JSON
+        user = EyUser.objects.get(id=user_id)
+        email_recieved = request.POST.get('email')
+        if email_recieved:
+            user.email = email_recieved
+        userName_recieved = request.POST.get('userName')
+        if userName_recieved:
+            user.userName = userName_recieved
+        role_recieved = request.POST.get('role')
+        if role_recieved:
+            user.role = role_recieved
+        type_recieved = request.POST.get('type')
+        if type_recieved:
+            user.type = type_recieved
+        equipe_recieved = request.POST.get('equipe')
+        if equipe_recieved:
+            user.equipe = equipe_recieved
+        user.save()
         return JsonResponse({'message': 'User updated successfully', 'status': 200})
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
@@ -295,12 +328,18 @@ def update_archive(request, archive_id=None):
     # else:
     try:
         archive = Archive.objects.get(id=archive_id)
-        
-        archive.dueDate = request.POST.get('dueDate')
-        archive.file = request.FILES.get('file')
-        archive.status = request.POST.get('status')
-        archive.progression = request.POST.get('progression')
-        archive.equipe = request.POST.get('equipe')
+        dueDate_recieved = request.POST.get('dueDate')
+        if dueDate_recieved is not None:
+            archive.dueDate = dueDate_recieved
+        file_recieved = request.FILES.get('file')
+        if file_recieved is not None:
+            archive.file = file_recieved
+        status_recieved = request.POST.get('status')
+        if status_recieved is not None:
+            archive.status = status_recieved
+        progression_recieved = request.POST.get('progression')
+        if progression_recieved is not None:
+            archive.progression = progression_recieved
         archive.save()
         return JsonResponse({'message': 'Archive updated successfully', 'status': 200})
     except Archive.DoesNotExist:
@@ -482,6 +521,24 @@ def getAllEquipesAndUsers(request):
         # except EyUser.DoesNotExist:
         #     return JsonResponse({'error': 'user not found.', 'status': 404})
         # return JsonResponse({'data': equipes}, safe=False)
+        
+@csrf_exempt
+def updateEquipe(request, equipe_id=None):
+    if request.method == 'POST':
+        try:
+            equipe = Equipe.objects.get(id=equipe_id)
+            equipeName_recieved = request.POST.get('equipeName')
+            if equipeName_recieved is not None:
+                equipe.equipeName = equipeName_recieved
+            project_recieved = request.POST.get('project')
+            if project_recieved is not None:
+                equipe.project = project_recieved
+            equipe.save()
+            return JsonResponse({'message': 'Equipe updated successfully', 'status': 200})
+        except Equipe.DoesNotExist:
+            return JsonResponse({'error': 'Equipe not found.', 'status': 404})
+    else:
+        return JsonResponse({'message': 'Check method, it must be a POST', 'status': 403})
 
 
 def getEquipeWithUsers(request):
