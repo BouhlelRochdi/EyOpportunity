@@ -250,12 +250,10 @@ def createArchive(request, user_id=None, equipe_id=None):
         print('user', user.userName)
         if request.method == 'POST':
             archive = Archive(
-                archiveName=request.POST.get('archiveName'),
                 dueDate=request.POST.get('dueDate'),
                 file=request.FILES.get('file'),
                 status=request.POST.get('status'),
             )
-            print('archiveName', archive.archiveName)
             try:
                 equipe = Equipe.objects.get(id=equipe_id)
                 archive.user = user
