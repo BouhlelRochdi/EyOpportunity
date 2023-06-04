@@ -437,6 +437,17 @@ def getAllEquipesAndUsers(request):
         equipes = Equipe.objects.all()
         for equipe in equipes:
             print('equipe=========>', equipe.equipeName)
+            print('equipe=========>', equipe.project)
+            
+            try:
+                user = EyUser.objects.get(equipe=equipe.id)
+                print('user=========>', user.userName)
+            except EyUser.DoesNotExist:
+                return JsonResponse({'error': 'user not found.', 'status': 404})
+        
+                
+                
+                
             # fullObject = {}
             # try:
             #     users = EyUser.objects.filter(equipe=equipe)
