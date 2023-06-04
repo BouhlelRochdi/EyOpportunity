@@ -438,12 +438,13 @@ def getAllEquipesAndUsers(request):
         for equipe in equipes:
             print('equipe=========>', equipe.equipeName)
             print('equipe=========>', equipe.project)
+        return JsonResponse({'data': equipes}, safe=False)
             
-            try:
-                user = EyUser.objects.get(equipe=equipe.id)
-                print('user=========>', user.userName)
-            except EyUser.DoesNotExist:
-                return JsonResponse({'error': 'user not found.', 'status': 404})
+            # try:
+            #     user = EyUser.objects.get(equipe=equipe.id)
+            #     print('user=========>', user.userName)
+            # except EyUser.DoesNotExist:
+            #     return JsonResponse({'error': 'user not found.', 'status': 404})
         
                 
                 
@@ -457,7 +458,7 @@ def getAllEquipesAndUsers(request):
             #     print('fullResults', fullResults)
             # except EyUser.DoesNotExist:
             #     return JsonResponse({'error': 'user not found.', 'status': 404})
-        return JsonResponse({'data': equipes}, safe=False)
+        # return JsonResponse({'data': equipes}, safe=False)
     except Equipe.DoesNotExist:
         return JsonResponse({'error': 'Equipe not found.', 'status': 404})
 
