@@ -111,23 +111,27 @@ def edit(request, user_id=None):
     try:
         user = EyUser.objects.get(id=user_id)
         email_recieved = request.POST.get('email')
-        if email_recieved:
+        if email_recieved is not None:
             user.email = email_recieved
         userName_recieved = request.POST.get('userName')
-        if userName_recieved:
+        if userName_recieved is not None:
             user.userName = userName_recieved
         role_recieved = request.POST.get('role')
-        if role_recieved:
+        if role_recieved is not None:
             user.role = role_recieved
         type_recieved = request.POST.get('type')
-        if type_recieved:
+        if type_recieved is not None:
             user.type = type_recieved
         equipe_recieved = request.POST.get('equipe')
-        if equipe_recieved:
+        if equipe_recieved is not None:
             user.equipe = equipe_recieved
-        user.save()
-        return JsonResponse({'message': 'User updated successfully', 'status': 200})
+        try:
+            user.save()
+            return JsonResponse({'message': 'User updated successfully', 'status': 200})
+        except:
+            return JsonResponse({'error': 'Error while saving user to DB', 'status': 407})
     except EyUser.DoesNotExist:
+        print('User not found')
         return JsonResponse({'error': 'User not found'}, status=404)
 
 
