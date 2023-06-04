@@ -239,37 +239,6 @@ def getActivatedUsers(request):
 #################################         Archive         ########################################
 
 @csrf_exempt
-def old_createArchive(request, user_id=None, equipe_id=None):
-    # authorization_header = request.headers.get('Authorization')
-    # payload = decodeToken(authorization_header)
-    # user = checkTokenPayload(payload)
-    print('user_id', user_id)
-    print('equipe_id', equipe_id)
-    try:
-        user = EyUser.objects.get(id=user_id)
-        print('user', user.userName)
-        if request.method == 'POST':
-            archive = Archive(
-                dueDate=request.POST.get('dueDate'),
-                file=request.FILES.get('file'),
-                status=request.POST.get('status'),
-            )
-            try:
-                equipe = Equipe.objects.get(id=equipe_id)
-                archive.user = user
-                archive.equipe = equipe
-                archive.save()
-                data = {'message': 'Enregistrement réussi', 'status': 200}
-                return JsonResponse(data)
-            except EyUser.DoesNotExist:
-                return JsonResponse({'message': 'user who want to add archive is not found', 'status': 401})
-        else:
-            return JsonResponse({'message': 'something went wrong', 'status': 404})
-    except EyUser.DoesNotExist:
-        return JsonResponse({'message': 'user not found', 'status': 404})
-
-
-@csrf_exempt
 def createArchive(request):
     if request.method == 'POST':
         archive = Archive(
