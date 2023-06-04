@@ -38,12 +38,9 @@ def create_new(request):
             email=request.POST.get('email'),
             role=request.POST.get('role'),
             type=request.POST.get('type'),
-            equipe=request.POST.get('equipe') | ''
         )
         user.save()
-        fullList = serializers.serialize('json', user)
-        json_data = json.loads(fullList)
-        return JsonResponse(json_data, safe=False)
+        return JsonResponse({'message': 'User created successfully', 'status': 201})
     else:
         return JsonResponse({'error': 'Invalid request method', 'status': 405})
 
@@ -96,7 +93,7 @@ def edit(request, user_id=None):
         fullList = serializers.serialize('json', updateUser)
         json_data = json.loads(fullList)
         # Utiliser JsonResponse pour renvoyer la réponse JSON
-        return JsonResponse(json_data, safe=False)
+        return JsonResponse({'message': 'User updated successfully', 'status': 200})
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
 
