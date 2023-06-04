@@ -210,7 +210,7 @@ def sign_in(request):
             user = EyUser.objects.get(email=email)
             print('user', user)
             print('user.pwd', user.pwd)
-            if user.pwd == password:
+            if user.pwd == password & user.activated == 'activated':
                 token = AccessToken.for_user(user)
                 user.access_token = token
                 user.save()
@@ -219,7 +219,7 @@ def sign_in(request):
                 json_data = json.loads(fullList)
                 return JsonResponse(json_data, safe=False)
             else:
-                return JsonResponse({'message': 'Invalid password', 'status': 301})
+                return JsonResponse({'message': 'Invalid password or deactivated user', 'status': 301})
         except EyUser.DoesNotExist:
             return JsonResponse({'message': 'Invalid email', 'status': 301})
     else:
