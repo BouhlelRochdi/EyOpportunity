@@ -108,21 +108,27 @@ def checkTokenPayload(payload):
 
 @csrf_exempt
 def edit(request, user_id=None):
+    print('<<<<<<<<<<<<<<<<edit>>>>>>>>>>>>>>>>')
     try:
         user = EyUser.objects.get(id=user_id)
         email_recieved = request.POST.get('email')
+        print('email_recieved', email_recieved)
         if email_recieved is not None:
             user.email = email_recieved
         userName_recieved = request.POST.get('userName')
+        print('userName_recieved', userName_recieved)
         if userName_recieved is not None:
             user.userName = userName_recieved
         role_recieved = request.POST.get('role')
+        print('role_recieved', role_recieved)
         if role_recieved is not None:
             user.role = role_recieved
         type_recieved = request.POST.get('type')
+        print('type_recieved', type_recieved)
         if type_recieved is not None:
             user.type = type_recieved
         equipe_recieved = request.POST.get('equipe')
+        print('equipe_recieved', equipe_recieved)
         if equipe_recieved is not None:
             user.equipe = equipe_recieved
         try:
