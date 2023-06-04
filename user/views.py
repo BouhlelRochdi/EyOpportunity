@@ -38,7 +38,7 @@ def create_new(request):
             email=request.POST.get('email'),
             role=request.POST.get('role'),
             type=request.POST.get('type'),
-            equipe=request.POST.get('equipe')
+            equipe=request.POST.get('equipe') | ''
         )
         user.save()
         fullList = serializers.serialize('json', user)

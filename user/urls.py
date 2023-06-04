@@ -10,7 +10,7 @@ urlpatterns = [
     path('create-admin/', views.createAdmin, name='create_admin'),
     
     # User part
-    path('create', views.create_new, name='users_create'),
+    path('create-user/', views.create_new, name='users_create'),
     path('view/<int:user_id>', views.view, name='users_view'),
     path('edit/<int:user_id>', views.edit, name='users_edit'),
     
