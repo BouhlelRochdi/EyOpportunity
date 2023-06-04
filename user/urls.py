@@ -27,6 +27,7 @@ urlpatterns = [
     path('get-activate-user/', views.getActivatedUsers, name='activate_user'),
     path('activate-user/<int:id>', views.activateUser, name='activate_user'),
     
+    path('get-users-by-equipe/<int:equipe_id>', views.getUsersBelongingToEquipe, name='get_user_by_equipe'),
     path('delete-user/<int:user_id>', views.deleteUser, name='delete_user'),
     
     #############################
@@ -39,7 +40,7 @@ urlpatterns = [
     path('archive-by-equipe/<int:equipe_id>', views.getArchiveByEquipe, name='archives_by_equipe'),
     path('delete-archive/<int:archive_id>', views.deleteArchive, name='delete_archive'),
     
-    path('getArchiveByEquipe/<int:equipe_id>', views.getEquipeByArchive, name='get_archive_by_equipe'),
+    path('getArchiveByEquipe/<int:archive_id>', views.getEquipeByArchive_old, name='get_archive_by_equipe'),
     
     
     #############################
@@ -52,6 +53,8 @@ urlpatterns = [
     path('delete-equipe/<int:equipe_id>', views.deleteEquipe, name='delete_equipe'),
     path('update-equipe/<int:equipe_id>', views.updateEquipe, name='update_equipe'),
     
+    
+    path('affect-archive-to-equipe/<int:archive_id>/<int:equipe_id>', views.affectArchiveToEquipe, name='affect_archive_to_equipe'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

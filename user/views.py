@@ -238,20 +238,34 @@ def sign_out(request):
         return JsonResponse({'success': 'user has been logged out successfully', 'status': 200})
 
 def getUserById(request, user_id=None):
+    print('user_id', user_id)
     try:
         user = EyUser.objects.get(id=user_id)
-        fullList = serializers.serialize('json', user)
-        json_data = json.loads(fullList)
-        return JsonResponse(json_data, safe=False)
+        obj = {
+            'id': user.id,
+            'userName': user.userName,
+            'email': user.email,
+            'activated': user.activated,
+            'role': user.role,
+            'equipe': user.equipe,
+        }
+        return JsonResponse(obj, safe=False)
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'user not found', 'status': 404})
     
 def getUserByEmail(request, email=None):
+    print('email', email)
     try:
         user = EyUser.objects.get(email=email)
-        fullList = serializers.serialize('json', user)
-        json_data = json.loads(fullList)
-        return JsonResponse(json_data, safe=False)
+        obj = {
+            'id': user.id,
+            'userName': user.userName,
+            'email': user.email,
+            'activated': user.activated,
+            'role': user.role,
+            'equipe': user.equipe,
+        }
+        return JsonResponse(obj, safe=False)
     except EyUser.DoesNotExist:
         return JsonResponse({'error': 'user not found', 'status': 404})
 
@@ -338,12 +352,6 @@ def getArchiveByUser(request, user_id=None):
 
 @csrf_exempt
 def update_archive(request, archive_id=None):
-    # authorization_header = request.headers.get('Authorization')
-    # payload = decodeToken(authorization_header)
-    # user = checkTokenPayload(payload)
-    # if user is None:
-    #     return JsonResponse({'error': 'you are not Authenticated.', 'status': 401})
-    # else:
     try:
         archive = Archive.objects.get(id=archive_id)
         dueDate_recieved = request.POST.get('dueDate')
@@ -432,28 +440,29 @@ def deleteArchive(request, archive_id=None):
     
     
     
-def getEquipeByArchive():
-    archives_with_equipe = []
+def getEquipeByArchive_old(requst, archive_id=None):
+    collect_archive = []
+    try:
+        archives_with_equipes = Archive.objects.select_related('equipe').all()
+        for archive in archives_with_equipes:
+            collect_archive.append(archive)
+            print('archive.status', archive.status)
+            print('archive.progression', archive.progression)
+        fullList = serializers.serialize('json', collect_archive)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except Archive.DoesNotExist:
+        return JsonResponse({'error': 'Archive not found.', 'status': 404})
+    
+def getUsersBelongingToEquipe(request, equipe_id=None):
+    try:
+        users = EyUser.objects.filter(equipe=equipe_id)
+        fullList = serializers.serialize('json', users)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'User not found.', 'status': 404})
 
-    # Retrieve all archives
-    archives = Archive.objects.all()
-
-    # Iterate over each archive and access the associated equipe
-    for archive in archives:
-        equipe = archive.equipe
-        equipe_name = equipe.equipeName
-
-        # Create a dictionary with archive and equipe details
-        archive_with_equipe = {
-            'archive_id': archive.id,
-            'archive_name': archive.archiveName,
-            'equipe_id': equipe.id,
-            'equipe_name': equipe_name
-        }
-
-        archives_with_equipe.append(archive_with_equipe)
-
-    return archives_with_equipe
 
 ##################################################################################################
 #################################         Equipe         ########################################
