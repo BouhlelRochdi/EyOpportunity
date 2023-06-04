@@ -26,7 +26,7 @@ class EyUser(models.Model):
     pwd = models.CharField(max_length=255, null=True)
     role = models.CharField(max_length=255, null=True)
     type = models.CharField(max_length=255)
-    equipe = models.ForeignKey(Equipe, on_delete=models.PROTECT, null=True)  # manyToOne
+    equipe = models.CharField(max_length=255)
     activated = models.CharField(max_length=255, default='deactivated')
     access_token = models.CharField(max_length=255, default='')
     # def __init__(self, userName, email, pwd, role, type, activated, access_token, id):
