@@ -29,7 +29,7 @@ APPEND_SLASH=False
 CSRF_TRUSTED_ORIGINS = ['http://localhost:4200']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
