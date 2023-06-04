@@ -357,7 +357,8 @@ def getArchiveByProgression(request, progression=None):
         return JsonResponse(json_data, safe=False)
     except Archive.DoesNotExist:
         return JsonResponse({'error': 'Archive not found.', 'status': 404})
-    
+
+@csrf_exempt    
 def deleteArchive(request, archive_id=None):
     try:
         Archive.objects.filter(id=archive_id).delete()
@@ -485,7 +486,7 @@ def getEquipeWithUsers(request):
     for user in users:
         print("User Name:", user.userName)
         
-        
+@csrf_exempt       
 def deleteEquipe(request, equipe_id=None):
     try:
         Equipe.objects.filter(id=equipe_id).delete()
