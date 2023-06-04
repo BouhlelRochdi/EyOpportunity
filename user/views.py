@@ -66,7 +66,6 @@ def decodeToken(access_token):
     # If the authorization header is not found
     return JsonResponse({'error': 'Authorization header not found', 'status': 401})
 
-# update user by email
 @csrf_exempt
 def update(request, user_id=None):
     if request.method == 'POST':
@@ -81,7 +80,6 @@ def update(request, user_id=None):
         return JsonResponse({'error': 'Invalid request method', 'status': 405})
 
 
-# affect user to an equipe
 @csrf_exempt
 def affectUserToEquipe(request, user_id=None):
     if request.method == 'POST':
@@ -94,7 +92,6 @@ def affectUserToEquipe(request, user_id=None):
         return JsonResponse({'error': 'Invalid request method', 'status': 405})
     
 
-# check Token
 def checkTokenPayload(payload):
     if payload:
         try:
@@ -108,27 +105,21 @@ def checkTokenPayload(payload):
 
 @csrf_exempt
 def edit(request, user_id=None):
-    print('<<<<<<<<<<<<<<<<edit>>>>>>>>>>>>>>>>')
     try:
         user = EyUser.objects.get(id=user_id)
         email_recieved = request.POST.get('email')
-        print('email_recieved', email_recieved)
         if email_recieved is not None:
             user.email = email_recieved
         userName_recieved = request.POST.get('userName')
-        print('userName_recieved', userName_recieved)
         if userName_recieved is not None:
             user.userName = userName_recieved
         role_recieved = request.POST.get('role')
-        print('role_recieved', role_recieved)
         if role_recieved is not None:
             user.role = role_recieved
         type_recieved = request.POST.get('type')
-        print('type_recieved', type_recieved)
         if type_recieved is not None:
             user.type = type_recieved
         equipe_recieved = request.POST.get('equipe')
-        print('equipe_recieved', equipe_recieved)
         if equipe_recieved is not None:
             user.equipe = equipe_recieved
         try:
@@ -246,6 +237,23 @@ def sign_out(request):
         user.save()
         return JsonResponse({'success': 'user has been logged out successfully', 'status': 200})
 
+def getUserById(request, user_id=None):
+    try:
+        user = EyUser.objects.get(id=user_id)
+        fullList = serializers.serialize('json', user)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'user not found', 'status': 404})
+    
+def getUserByEmail(request, email=None):
+    try:
+        user = EyUser.objects.get(email=email)
+        fullList = serializers.serialize('json', user)
+        json_data = json.loads(fullList)
+        return JsonResponse(json_data, safe=False)
+    except EyUser.DoesNotExist:
+        return JsonResponse({'error': 'user not found', 'status': 404})
 
 def getConnectedUser(request):
     authorization_header = request.headers.get('Authorization')
@@ -420,7 +428,32 @@ def deleteArchive(request, archive_id=None):
         return JsonResponse({'message': 'Archive deleted successfully', 'status': 200})
     except Archive.DoesNotExist:
         return JsonResponse({'error': 'Archive not found.', 'status': 404})
+    
+    
+    
+    
+def getEquipeByArchive():
+    archives_with_equipe = []
 
+    # Retrieve all archives
+    archives = Archive.objects.all()
+
+    # Iterate over each archive and access the associated equipe
+    for archive in archives:
+        equipe = archive.equipe
+        equipe_name = equipe.equipeName
+
+        # Create a dictionary with archive and equipe details
+        archive_with_equipe = {
+            'archive_id': archive.id,
+            'archive_name': archive.archiveName,
+            'equipe_id': equipe.id,
+            'equipe_name': equipe_name
+        }
+
+        archives_with_equipe.append(archive_with_equipe)
+
+    return archives_with_equipe
 
 ##################################################################################################
 #################################         Equipe         ########################################

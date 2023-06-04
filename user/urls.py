@@ -12,16 +12,21 @@ urlpatterns = [
     path('create-admin/', views.createAdmin, name='create_admin'),
     
     # User part
-    path('create-user/', views.create_new, name='users_create'),
     path('view/<int:user_id>', views.view, name='users_view'),
-    path('edit/<int:user_id>', views.edit, name='users_edit'),
     
+    path('create-user/', views.create_new, name='users_create'),
+    path('edit/<int:user_id>', views.edit, name='users_edit'),
     path('register/', views.register, name='register'),
     path('login/', views.sign_in, name='login'),
+    
     path('getAllUsers/', views.getAllUsers, name='getAllUsers'),
-    path('activate-user/<int:id>', views.activateUser, name='activate_user'),
+    path('get-user-by-id/<int:user_id>', views.getUserById, name='get_user_by_id'),
+    path('get-user-by-email/<str:email>', views.getUserByEmail, name='get_user_by_email'),
+    
     path('get-deactivate-user/', views.getDeactivatedUsers, name='deactivate_user'),
     path('get-activate-user/', views.getActivatedUsers, name='activate_user'),
+    path('activate-user/<int:id>', views.activateUser, name='activate_user'),
+    
     path('delete-user/<int:user_id>', views.deleteUser, name='delete_user'),
     
     #############################
@@ -34,6 +39,9 @@ urlpatterns = [
     path('archive-by-equipe/<int:equipe_id>', views.getArchiveByEquipe, name='archives_by_equipe'),
     path('delete-archive/<int:archive_id>', views.deleteArchive, name='delete_archive'),
     
+    path('getArchiveByEquipe/<int:equipe_id>', views.getEquipeByArchive, name='get_archive_by_equipe'),
+    
+    
     #############################
     # equipe part
     path('create-equipe/', views.createEquipe, name='create_equipe'),
@@ -42,7 +50,7 @@ urlpatterns = [
     path('get-all-equipes-Users/', views.getAllEquipesAndUsers, name='get_all_equipes'),
     path('get-members-by-equipe/<int:equipe_id>', views.getMembersByEquipe, name='get_members_by_equipe'),
     path('delete-equipe/<int:equipe_id>', views.deleteEquipe, name='delete_equipe'),
-    
+    path('update-equipe/<int:equipe_id>', views.updateEquipe, name='update_equipe'),
     
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
